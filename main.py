@@ -6,8 +6,8 @@ matriz_resultante = convertirImagenAMatriz(ruta_imagen)
 
 campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
 
-tortajeitor = Robot(matriz_resultante, (3,3), campoVision)
-masieitor = Robot(matriz_resultante, (6,6), campoVision)
+tortajeitor = Robot(matriz_resultante, (3, 3), campoVision)
+masieitor = Robot(matriz_resultante, (6, 6), campoVision)
 
 listaRobots = [tortajeitor, masieitor]
 

@@ -19,6 +19,7 @@ class Robot:
 
     def moverse(self):
         robotCerca = self.getRobotCerca()
+
         if robotCerca is not None:
             self.mapaLocal.MezclarMapa(robotCerca.mapaLocal)
 
@@ -30,9 +31,11 @@ class Robot:
         elif self.coordenadas is not self.objetivoFinal:
             self.seguirRuta()
 
+        ## Si estamos al final, reseteamos coordenadas y comenzamos de nuevo
         elif self.coordenadas is self.objetivoFinal:
             self.resetearObjetivoFinal()
 
+        ## Buscamos objetivos
         else:
             self.explorar()
 
@@ -44,10 +47,12 @@ class Robot:
             self.objetivoFinal = objetivoAlrededor
 
         else:
-            self.explorarCasillasDesconocidas()
+            self.exploraSiguienteCasilla()
 
-    def explorarCasillasDesconocidas(self):
-         self.ultimoPuntoPosibleAlgoritmo.getSiguienteMovimiento()
+    def exploraSiguienteCasilla(self):
+         self.coordenadas = self.ultimoPuntoPosibleAlgoritmo.getSiguienteMovimiento()
+
+
     def getRobotCerca(self):
         for posicionCampoVision in self.campoVision:
             casilla = self.mapaGlobal.GetCasilla((posicionCampoVision[0] + self.coordenadas.x, posicionCampoVision[1] + self.coordenadas.y))
@@ -63,8 +68,7 @@ class Robot:
         return None
 
     def seguirRuta(self):
-        ruta = self.rutaDefinida.pop()
-        self.coordenadas = ruta
+        self.coordenadas = self.rutaDefinida.pop()
 
     def resetearObjetivoFinal(self):
         self.objetivoFinal = None
