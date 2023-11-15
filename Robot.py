@@ -1,81 +1,44 @@
 from enum import Enum
 from Casilla import *
 from Algoritmo import *
-
-class TipoEstado(Enum):
-    BUSCANDO = 0
-    AESTRELLA = 1
+from collections import deque
 
 class Robot:
-    def __int__(self, mapaGlobal, coordenadas, campoVision):
+
+    def __init__(self, mapaGlobal, coordenadas, campoVision):
         self.mapaGlobal = mapaGlobal
         self.coordenadas = coordenadas
-        self.mapaLocal = None
-        self.estado = TipoEstado.BUSCANDO
-        self.objetivoFinal = None
         self.campoVision = campoVision
-        self.rutaDefinida = None
-        self.ultimoPuntoPosibleAlgoritmo = UltimoPuntoPosible()
+
+        self.mapaLocal =[[Casilla() for _ in range(len(mapaGlobal[0]))] for _ in range(len(mapaGlobal))]
+        self.bfsQueue = deque([coordenadas])
 
     def moverse(self):
-        robotCerca = self.getRobotCerca()
+        if not self.bfsQueue:
+            return False
 
-        if robotCerca is not None:
-            self.mapaLocal.MezclarMapa(robotCerca.mapaLocal)
+        current_row, current_col = self.bfsQueue.pop()
+        neighbors = [(current_row - 1, current_col), (current_row + 1, current_col),
+                     (current_row, current_col - 1), (current_row, current_col + 1),
+                     (current_row - 1, current_col - 1), (current_row + 1, current_col + 1),
+                     (current_row - 1, current_col +1), (current_row + 1, current_col -1)]
 
-        ## Si hay objetivoFinal ni ruta definida, busca camino con A*
-        if self.objetivoFinal is not None and self.rutaDefinida is not None:
-            self.hazEstrella()
+        self.coordenadas = (current_row, current_col)
 
-        ## Si hay objetivoFinal y tiene ruta, que se vaya moviendo hacia el objetivo
-        elif self.coordenadas is not self.objetivoFinal:
-            self.seguirRuta()
+        for neighbor_row, neighbor_col in neighbors:
+            if self.is_valid_move(neighbor_row, neighbor_col):
+                self.bfsQueue.append((neighbor_row, neighbor_col))
+                self.mapaLocal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
+                self.mapaGlobal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
 
-        ## Si estamos al final, reseteamos coordenadas y comenzamos de nuevo
-        elif self.coordenadas is self.objetivoFinal:
-            self.resetearObjetivoFinal()
+        return True
 
-        ## Buscamos objetivos
-        else:
-            self.explorar()
+    def is_valid_move(self, row, col):
+        rows, cols = len(self.mapaGlobal), len(self.mapaGlobal[0])
 
+        # TODO Simplificar
+        dentroDeLosLimites = 0 <= row < rows and 0 <= col < cols
+        noHayPared = self.mapaGlobal[row][col].tipo is TipoCasilla.NADA
+        noLoHeVisitado = self.mapaLocal[row][col].tipo is not TipoCasilla.VISITADO
 
-    def explorar(self):
-        objetivoAlrededor = self.getObjetivoAlrededorDisponible()
-
-        if objetivoAlrededor is not None:
-            self.objetivoFinal = objetivoAlrededor
-
-        else:
-            self.exploraSiguienteCasilla()
-
-    def exploraSiguienteCasilla(self):
-         self.coordenadas = self.ultimoPuntoPosibleAlgoritmo.getSiguienteMovimiento()
-
-
-    def getRobotCerca(self):
-        for posicionCampoVision in self.campoVision:
-            casilla = self.mapaGlobal.GetCasilla((posicionCampoVision[0] + self.coordenadas.x, posicionCampoVision[1] + self.coordenadas.y))
-            if casilla.robotContenedor is not None:
-                return casilla.robotContenedor
-        return None
-
-    def getObjetivoAlrededorDisponible(self):
-        for posicionCampoVision in self.campoVision:
-            casilla = self.mapaGlobal.GetCasilla((posicionCampoVision[0] + self.coordenadas.x, posicionCampoVision[1] + self.coordenadas.y))
-            if not casilla.estaCogida and casilla.tipo is TipoCasilla.OBJETIVO:
-                return casilla
-        return None
-
-    def seguirRuta(self):
-        self.coordenadas = self.rutaDefinida.pop()
-
-    def resetearObjetivoFinal(self):
-        self.objetivoFinal = None
-        self.rutaDefinida = None
-
-    def hazEstrella(self):
-        ruta = RealizaAEstrella(self.mapaGlobal, self.coordenadas, self.objetivoFinal)
-        if ruta is not None:
-            self.rutaDefinida = ruta
-
+        return dentroDeLosLimites and noHayPared and noLoHeVisitado

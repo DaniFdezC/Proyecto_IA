@@ -57,7 +57,7 @@ def astar(start, end, obstacles_map):
             ):
                 continue
 
-            if obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo == 1 or neighbor_coord in closed_set:
+            if obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != 0 or neighbor_coord in closed_set:
                 continue
 
             neighbor = Node(neighbor_coord)

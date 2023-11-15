@@ -3,11 +3,9 @@ from enum import Enum
 class TipoCasilla(Enum):
     NADA = 0
     PARED = 1
-    DESCONOCIDO = 2
+    VISITADO = 2
     OBJETIVO = 3
 
 class Casilla:
-    def __init__(self, estaCogida=False, tipo=TipoCasilla.NADA, robotContenedor=None):
-        self.estaCogida = estaCogida
+    def __init__(self, tipo=TipoCasilla.NADA):
         self.tipo = tipo
-        self.robotContenedor = robotContenedor

@@ -1,5 +1,5 @@
 from PIL import Image
-from Casilla import Casilla
+from Casilla import *
 
 
 def convertirImagenAMatriz(ruta_imagen):
@@ -17,7 +17,7 @@ def convertirImagenAMatriz(ruta_imagen):
         matriz = [valores_pixeles[i:i+ancho] for i in range(0, len(valores_pixeles), ancho)]
 
         # Convertir valores a 0 (blanco) o 1 (negro)
-        matriz_binaria = [[Casilla(False, 0, None) if valor == 255 else Casilla(False, 1, None) for valor in fila] for fila in matriz]
+        matriz_binaria = [[Casilla(TipoCasilla.NADA) if valor == 255 else Casilla(TipoCasilla.PARED) for valor in fila] for fila in matriz]
 
         return matriz_binaria
 
