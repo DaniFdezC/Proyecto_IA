@@ -38,27 +38,28 @@ BROWN = (165,42,42)
         print()"""
 
 
-ruta_imagen = "Imagenes/mapaDefinitivo.png"
+ruta_imagen = "./Imagenes/mapaDefinitivo.png"
 matriz_resultante = convertirImagenAMatriz(ruta_imagen)
 
 filas = len(matriz_resultante)
 columnas = len(matriz_resultante[0])
+
 tamano_casilla = 5
+niebla =[[Casilla(TipoCasilla.NIEBLA) for _ in range(columnas)] for _ in range(filas)]
 
 pantalla = pygame.display.set_mode((columnas*tamano_casilla, filas*tamano_casilla))
 pygame.display.set_caption("Matriz de Casillas")
 
-
 campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
 
-robot1 = Robot(matriz_resultante, (27, 27), campoVision)
-robot2 = Robot(matriz_resultante, (7, 92), campoVision)
-robot3 = Robot(matriz_resultante, (9, 147), campoVision)
-robot4 = Robot(matriz_resultante, (43, 96), campoVision)
-robot5 = Robot(matriz_resultante, (43, 98), campoVision)
-robot6 = Robot(matriz_resultante, (78, 27), campoVision)
-robot7 = Robot(matriz_resultante, (67, 94), campoVision)
-robot8 = Robot(matriz_resultante, (97, 86), campoVision)
+robot1 = Robot(matriz_resultante, (27, 27), campoVision, niebla)
+robot2 = Robot(matriz_resultante, (7, 92), campoVision, niebla)
+robot3 = Robot(matriz_resultante, (9, 147), campoVision, niebla)
+robot4 = Robot(matriz_resultante, (43, 96), campoVision, niebla)
+robot5 = Robot(matriz_resultante, (43, 98), campoVision, niebla)
+robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla)
+robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
+robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
 
 robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
 iteraciones = 0
@@ -73,7 +74,7 @@ while True:
         pantalla.fill((255, 255, 255))
 
         # Dibujar la matriz en la pantalla
-        for i, fila in enumerate(matriz_resultante):
+        for i, fila in enumerate(niebla):
             for j, casilla in enumerate(fila):
 
                 if casilla.tipo is TipoCasilla.PARED:
@@ -82,6 +83,8 @@ while True:
                     color = BLUE
                 elif casilla.tipo is TipoCasilla.VISITADO:
                     color = RED
+                elif casilla.tipo is TipoCasilla.NIEBLA:
+                    color = GREY
                 else:
                     color = WHITE
 

@@ -5,6 +5,7 @@ class TipoCasilla(Enum):
     PARED = 1
     VISITADO = 2
     OBJETIVO = 3
+    NIEBLA = 4
 
 class Casilla:
     def __init__(self, tipo=TipoCasilla.NADA):
