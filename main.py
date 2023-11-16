@@ -47,15 +47,16 @@ pygame.display.set_caption("Matriz de Casillas")
 campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
 
 robot1 = Robot(matriz_resultante, (27, 27), campoVision)
-robot2 = Robot(matriz_resultante, (7, 92), campoVision)
+"""robot2 = Robot(matriz_resultante, (7, 92), campoVision)
 robot3 = Robot(matriz_resultante, (9, 147), campoVision)
 robot4 = Robot(matriz_resultante, (43, 96), campoVision)
 robot5 = Robot(matriz_resultante, (43, 98), campoVision)
 robot6 = Robot(matriz_resultante, (78, 27), campoVision)
 robot7 = Robot(matriz_resultante, (67, 94), campoVision)
-robot8 = Robot(matriz_resultante, (97, 86), campoVision)
+robot8 = Robot(matriz_resultante, (97, 86), campoVision)"""
 
-robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
+#robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
+robots = [robot1]
 iteraciones = 0
 while True:
     for robot in robots:
