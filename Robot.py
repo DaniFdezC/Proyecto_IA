@@ -3,6 +3,7 @@ from Casilla import *
 from Algoritmo import *
 from collections import deque
 import numpy as np
+from Aestrella import *
 
 class Robot:
 
@@ -19,27 +20,52 @@ class Robot:
 
         self.mapaLocal =[[Casilla() for _ in range(self.ancho)] for _ in range(self.alto)]
         self.bfsQueue = deque([coordenadas])
+        self.siguiendoAEstrella = False
+        self.rutaAEstrella = None
+        self.indiceRuta = 1
 
     def moverse(self):
-        if not self.bfsQueue:
-            return False
+        if self.siguiendoAEstrella:
+            self.coordenadas = self.rutaAEstrella[self.indiceRuta]
+            self.indiceRuta += 1
+            if len(self.rutaAEstrella) >= self.indiceRuta:
+                self.siguiendoAEstrella = False
+                self.indiceRuta = 1
 
-        current_row, current_col = self.bfsQueue.pop()
-        neighbors = [(current_row - 1, current_col), (current_row + 1, current_col),
-                     (current_row, current_col - 1), (current_row, current_col + 1),
-                     (current_row - 1, current_col - 1), (current_row + 1, current_col + 1),
-                     (current_row - 1, current_col +1), (current_row + 1, current_col -1)]
+        if self.siguiendoAEstrella is False:
+            if not self.bfsQueue:
+                return False
 
-        self.coordenadas = (current_row, current_col)
+            # Ir haciendo pop hasta que encontremos uno que almenos 1 vecino no este visitado.
+            current_row, current_col = self.bfsQueue.pop()
+            neighbors = [(current_row - 1, current_col), (current_row + 1, current_col),
+                         (current_row, current_col - 1), (current_row, current_col + 1),
+                         (current_row - 1, current_col - 1), (current_row + 1, current_col + 1),
+                         (current_row - 1, current_col +1), (current_row + 1, current_col -1)]
 
-        for neighbor_row, neighbor_col in neighbors:
-            if self.is_valid_move(neighbor_row, neighbor_col):
-                self.bfsQueue.append((neighbor_row, neighbor_col))
-                self.mapaLocal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
-                self.mapaGlobal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
-                self.quitar_niebla()
+            if self.mePuedoMoverSinDarSaltos(current_row, current_col):
+                self.coordenadas = (current_row, current_col)
+            else:
+                self.rutaAEstrella = astar(self.coordenadas, (current_row, current_col), self.mapaLocal)
+                self.siguiendoAEstrella = True
 
-        return True
+
+            for neighbor_row, neighbor_col in neighbors:
+                if self.is_valid_move(neighbor_row, neighbor_col):
+                    self.bfsQueue.append((neighbor_row, neighbor_col))
+
+                    self.mapaLocal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
+                    self.mapaGlobal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
+                    self.quitar_niebla()
+
+            return True
+
+    def mePuedoMoverSinDarSaltos(self, nuevaX, nuevaY):
+        difX = abs(self.coordenadas[0] - nuevaX)
+        difY = abs(self.coordenadas[1] - nuevaY)
+
+        return difY < 2 and difX < 2
+
 
 
     def is_valid_move(self, row, col):

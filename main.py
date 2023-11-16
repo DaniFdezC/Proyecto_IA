@@ -13,18 +13,12 @@ HEIGHT = 500
 WIDTH = 750
 
 
-# RED = (255, 0, 0)
-RED = (237, 28, 36)
+RED = (255, 0, 0)
 GREEN = (0, 255, 0)
-BLUE = (0, 162, 232)
+BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-PURPLE = (128, 0, 128)
-ORANGE = (255, 165 ,0)
-GREY = (128, 128, 128)
-TURQUOISE = (64, 224, 208)
-BROWN = (165,42,42)
 
 
 """def print_explored_area(mapaGlobal, mapaLocal):
@@ -40,6 +34,7 @@ BROWN = (165,42,42)
 
 ruta_imagen = "./Imagenes/mapaDefinitivo.png"
 matriz_resultante = convertirImagenAMatriz(ruta_imagen)
+matriz_resultante[3][98].tipoObjetivo = TipoObjetivo.LIBRE
 
 filas = len(matriz_resultante)
 columnas = len(matriz_resultante[0])
@@ -61,7 +56,8 @@ robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla)
 robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
 robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
 
-robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
+#robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
+robots = [robot1]
 iteraciones = 0
 while True:
     for robot in robots:
@@ -79,12 +75,19 @@ while True:
 
                 if casilla.tipo is TipoCasilla.PARED:
                     color = BLACK
+                elif (i, j) == robot.coordenadas and matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
+                    matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
+                    color = BLUE
                 elif (i, j) == robot.coordenadas:
                     color = BLUE
-                elif casilla.tipo is TipoCasilla.VISITADO:
+                elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
                     color = RED
                 elif casilla.tipo is TipoCasilla.NIEBLA:
                     color = GREY
+                elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
+                    color=GREEN
+                elif casilla.tipo is TipoCasilla.VISITADO:
+                    color = YELLOW
                 else:
                     color = WHITE
 
@@ -92,7 +95,7 @@ while True:
 
         # Actualizar la pantalla
         pygame.display.flip()
-        #time.sleep(0.1)
+        time.sleep(0.1)
     iteraciones += 1
     print(iteraciones)
 
