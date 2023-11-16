@@ -1,0 +1,4 @@
+Pillow
+pygame
+matplotlib
+numpy
