@@ -28,6 +28,7 @@ class Robot:
         for neighbor_row, neighbor_col in neighbors:
             if self.is_valid_move(neighbor_row, neighbor_col):
                 self.bfsQueue.append((neighbor_row, neighbor_col))
+
                 self.mapaLocal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
                 self.mapaGlobal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
 
