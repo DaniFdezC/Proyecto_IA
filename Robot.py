@@ -66,8 +66,6 @@ class Robot:
 
         return difY < 2 and difX < 2
 
-
-
     def is_valid_move(self, row, col):
         rows, cols = self.alto, self.ancho
 
