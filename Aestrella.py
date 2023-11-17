@@ -4,7 +4,8 @@ from Casilla import *
 
 def distance(coord1, coord2):
     # Función para calcular la distancia entre dos coordenadas (euclidiana)
-    return ((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2) ** 0.5
+    #return ((coord1[0] - coord2[0]) ** 2 + (coord1[1] - coord2[1]) ** 2) ** 0.5
+    return abs(coord1[0] - coord2[0]) + abs(coord1[1] - coord2[1])
 
 class Node:
     def __init__(self, coord):
