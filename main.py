@@ -19,6 +19,7 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GREY = (105, 105, 105)
 
 
 """def print_explored_area(mapaGlobal, mapaLocal):
@@ -56,12 +57,15 @@ robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla)
 robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
 robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
 
-#robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
-robots = [robot1]
+robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
+#robots = [robot1]
 iteraciones = 0
+
 while True:
     for robot in robots:
-        robot.moverse()
+        if robot.moverse2() is False:
+            robots.remove(robot)
+
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
@@ -95,9 +99,9 @@ while True:
 
         # Actualizar la pantalla
         pygame.display.flip()
-        time.sleep(0.1)
+        #time.sleep(0.1)
     iteraciones += 1
-    print(iteraciones)
+    #print(iteraciones)
 
 
 

@@ -14,17 +14,18 @@ class Robot:
         self.niebla = niebla
         self.campoVision = campoVision
         self.coordenadas = coordenadas
+        self.coordenadasIniciales = coordenadas
 
         self.alto = len(mapaGlobal)
         self.ancho = len(mapaGlobal[0])
 
         self.mapaLocal =[[Casilla() for _ in range(self.ancho)] for _ in range(self.alto)]
-        self.bfsQueue = deque([coordenadas])
+        self.colaBFS = deque([coordenadas])
         self.siguiendoAEstrella = False
         self.rutaAEstrella = None
         self.indiceRuta = 1
 
-    def moverse(self):
+    """def moverse(self):
         if self.siguiendoAEstrella:
             self.coordenadas = self.rutaAEstrella[self.indiceRuta]
             self.indiceRuta += 1
@@ -33,32 +34,91 @@ class Robot:
                 self.indiceRuta = 1
 
         if self.siguiendoAEstrella is False:
-            if not self.bfsQueue:
+            if not self.colaBFS:
                 return False
 
             # Ir haciendo pop hasta que encontremos uno que almenos 1 vecino no este visitado.
-            current_row, current_col = self.bfsQueue.pop()
-            neighbors = [(current_row - 1, current_col), (current_row + 1, current_col),
-                         (current_row, current_col - 1), (current_row, current_col + 1),
-                         (current_row - 1, current_col - 1), (current_row + 1, current_col + 1),
-                         (current_row - 1, current_col +1), (current_row + 1, current_col -1)]
+            filaActual, columnaActual = self.colaBFS.pop()
+            vecinos = [(filaActual - 1, columnaActual), (filaActual + 1, columnaActual),
+                         (filaActual, columnaActual - 1), (filaActual, columnaActual + 1),
+                         (filaActual - 1, columnaActual - 1), (filaActual + 1, columnaActual + 1),
+                         (filaActual - 1, columnaActual +1), (filaActual + 1, columnaActual -1)]
 
-            if self.mePuedoMoverSinDarSaltos(current_row, current_col):
-                self.coordenadas = (current_row, current_col)
+            if self.mePuedoMoverSinDarSaltos(filaActual, columnaActual):
+                self.coordenadas = (filaActual, columnaActual)
             else:
-                self.rutaAEstrella = astar(self.coordenadas, (current_row, current_col), self.mapaLocal)
+                self.rutaAEstrella = astar(self.coordenadas, (filaActual, columnaActual), self.mapaLocal)
                 self.siguiendoAEstrella = True
 
 
-            for neighbor_row, neighbor_col in neighbors:
-                if self.is_valid_move(neighbor_row, neighbor_col):
-                    self.bfsQueue.append((neighbor_row, neighbor_col))
+            for continuefilaVecina, columnaVecina in vecinos:
+                if self.mePuedoMover(filaVecina, columnaVecina):
+                    self.colaBFS.append((filaVecina, columnaVecina))
 
-                    self.mapaLocal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
-                    self.mapaGlobal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
+                    self.mapaLocal[filaVecina][columnaVecina].tipo = TipoCasilla.VISITADO
+                    self.mapaGlobal[filaVecina][columnaVecina].tipo = TipoCasilla.VISITADO
                     self.quitar_niebla()
 
+            return True"""
+
+    def moverse2(self):
+        if self.siguiendoAEstrella:
+            self.coordenadas = self.rutaAEstrella[self.indiceRuta]
+            self.indiceRuta += 1
+            if len(self.rutaAEstrella) >= self.indiceRuta:
+                self.siguiendoAEstrella = False
+                self.indiceRuta = 1
+
+        if self.siguiendoAEstrella is False:
+            seguir = True
+
+            while seguir:
+                if not self.colaBFS:
+                    return False
+                filaActual, columnaActual = self.colaBFS.pop()
+                #print(len(self.colaBFS))
+                vecinos = [(filaActual - 1, columnaActual), (filaActual + 1, columnaActual),
+                             (filaActual, columnaActual - 1), (filaActual, columnaActual + 1),
+                             (filaActual - 1, columnaActual - 1), (filaActual + 1, columnaActual + 1),
+                             (filaActual - 1, columnaActual + 1), (filaActual + 1, columnaActual - 1)]
+
+                if not self.algunaCasillaNoVisitada(vecinos):
+                    seguir = True
+                else:
+                    if self.mePuedoMoverSinDarSaltos(filaActual, columnaActual):
+                        self.coordenadas = (filaActual, columnaActual)
+
+
+                    else:
+                        self.rutaAEstrella = astar(self.coordenadas, (filaActual, columnaActual), self.mapaLocal)
+                        self.siguiendoAEstrella = True
+
+                    seguir = False
+
+                for filaVecina, columnaVecina in vecinos:
+                    if self.mePuedoMover(filaVecina, columnaVecina):
+                        self.colaBFS.append((filaVecina, columnaVecina))
+
+                        self.mapaLocal[filaVecina][columnaVecina].tipo = TipoCasilla.VISITADO
+                        self.mapaGlobal[filaVecina][columnaVecina].tipo = TipoCasilla.VISITADO
+                        self.quitar_niebla()
+
             return True
+
+
+    def todasLasCasillasVisitadas(self, casillas):
+        for casilla in casillas:
+            if self.mapaLocal[casilla[0]][casilla[1]].tipo is not TipoCasilla.VISITADO:
+                return False
+
+        return True
+
+    def algunaCasillaNoVisitada(self, casillas):
+        for casilla in casillas:
+            if self.mapaLocal[casilla[0]][casilla[1]].tipo is TipoCasilla.NADA:
+                return True
+
+        return False
 
     def mePuedoMoverSinDarSaltos(self, nuevaX, nuevaY):
         difX = abs(self.coordenadas[0] - nuevaX)
@@ -68,7 +128,7 @@ class Robot:
 
 
 
-    def is_valid_move(self, row, col):
+    def mePuedoMover(self, row, col):
         rows, cols = self.alto, self.ancho
 
         # TODO Simplificar
