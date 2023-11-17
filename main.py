@@ -56,8 +56,8 @@ robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla)
 robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
 robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
 
-robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
-#robots = [robot1]
+#robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
+robots = [robot1]
 iteraciones = 0
 while True:
     for robot in robots:

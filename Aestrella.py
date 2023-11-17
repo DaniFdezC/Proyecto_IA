@@ -58,8 +58,8 @@ def astar(start, end, obstacles_map):
                 neighbor_coord[1] < 0 or neighbor_coord[1] >= len(obstacles_map[0])
             ):
                 continue
-
-            if obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != TipoCasilla.VISITADO or neighbor_coord in closed_set:
+            print("A* --> ", obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo, obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != TipoCasilla.NADA)
+            if obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != TipoCasilla.NADA or neighbor_coord in closed_set:
                 continue
 
             neighbor = Node(neighbor_coord)
