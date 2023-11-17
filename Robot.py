@@ -1,6 +1,4 @@
-from enum import Enum
 from Casilla import *
-from Algoritmo import *
 from collections import deque
 
 class Robot:
@@ -37,7 +35,6 @@ class Robot:
     def is_valid_move(self, row, col):
         rows, cols = len(self.mapaGlobal), len(self.mapaGlobal[0])
 
-        # TODO Simplificar
         dentroDeLosLimites = 0 <= row < rows and 0 <= col < cols
         noHayPared = self.mapaGlobal[row][col].tipo is TipoCasilla.NADA
         noLoHeVisitado = self.mapaLocal[row][col].tipo is not TipoCasilla.VISITADO

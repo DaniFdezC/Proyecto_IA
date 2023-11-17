@@ -1,17 +1,11 @@
 import sys
-import time
-
 from CreadorMapa import convertirImagenAMatriz
 from Robot import Robot
-import matplotlib.pyplot as plt
 import pygame
-import numpy as np
-from collections import deque
 from Casilla import *
 
 HEIGHT = 500
 WIDTH = 750
-
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -20,46 +14,48 @@ YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+rutaImagen = "Imagenes/mapaDefinitivo.png"
+matrizResultante = convertirImagenAMatriz(rutaImagen)
+matrizResultante[3][98].tipoObjetivo = TipoObjetivo.LIBRE
 
-"""def print_explored_area(mapaGlobal, mapaLocal):
-    
-    for row in range(len(mapaGlobal)):
-        for col in range(len(mapaGlobal[0])):
-            if mapaLocal[row][col].tipo is TipoCasilla.VISITADO:
-                print("V", end=" ")  # Visited
-            else:
-                print("X" if mapaGlobal[row][col].tipo == TipoCasilla.PARED else " ", end=" ")  # Wall or free space
-        print()"""
-
-
-ruta_imagen = "Imagenes/mapaDefinitivo.png"
-matriz_resultante = convertirImagenAMatriz(ruta_imagen)
-matriz_resultante[3][98].tipoObjetivo = TipoObjetivo.LIBRE
-
-filas = len(matriz_resultante)
-columnas = len(matriz_resultante[0])
+filas = len(matrizResultante)
+columnas = len(matrizResultante[0])
 tamano_casilla = 7
 
 pantalla = pygame.display.set_mode((columnas*tamano_casilla, filas*tamano_casilla))
 pygame.display.set_caption("Matriz de Casillas")
 
-
 campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
 
-robot1 = Robot(matriz_resultante, (27, 27), campoVision)
-robot2 = Robot(matriz_resultante, (7, 92), campoVision)
-robot3 = Robot(matriz_resultante, (9, 147), campoVision)
-robot4 = Robot(matriz_resultante, (43, 96), campoVision)
-robot5 = Robot(matriz_resultante, (43, 98), campoVision)
-robot6 = Robot(matriz_resultante, (78, 27), campoVision)
-robot7 = Robot(matriz_resultante, (67, 94), campoVision)
-robot8 = Robot(matriz_resultante, (97, 86), campoVision)
+robot1 = Robot(matrizResultante, (27, 27), campoVision)
+robot2 = Robot(matrizResultante, (7, 92), campoVision)
+robot3 = Robot(matrizResultante, (9, 147), campoVision)
+robot4 = Robot(matrizResultante, (43, 96), campoVision)
+robot5 = Robot(matrizResultante, (43, 98), campoVision)
+robot6 = Robot(matrizResultante, (78, 27), campoVision)
+robot7 = Robot(matrizResultante, (67, 94), campoVision)
+robot8 = Robot(matrizResultante, (97, 86), campoVision)
+
+matrizResultante[1][92].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[21][16].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[1][58].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[6][108].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[29][94].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[55][55].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[66][97].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[79][131].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[83][61].tipoObjetivo = TipoObjetivo.LIBRE
+matrizResultante[85][1].tipoObjetivo = TipoObjetivo.LIBRE
 
 robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
 iteraciones = 0
+objetivosTotales = 10
+contadorObjetivos = 0
+
 while True:
     for robot in robots:
-        robot.moverse()
+        if robot.moverse() is False:
+            robots.remove(robot)
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
@@ -68,13 +64,14 @@ while True:
         pantalla.fill((255, 255, 255))
 
         # Dibujar la matriz en la pantalla
-        for i, fila in enumerate(matriz_resultante):
+        for i, fila in enumerate(matrizResultante):
             for j, casilla in enumerate(fila):
 
                 if casilla.tipo is TipoCasilla.PARED:
                     color = BLACK
-                elif (i, j) == robot.coordenadas and matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
-                    matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
+                elif (i, j) == robot.coordenadas and matrizResultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
+                    matrizResultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
+                    contadorObjetivos += 1
                     color = BLUE
                 elif (i, j) == robot.coordenadas:
                     color = BLUE
@@ -91,15 +88,9 @@ while True:
 
         # Actualizar la pantalla
         pygame.display.flip()
-        time.sleep(0.1)
+        #time.sleep(0.1)
+    if (contadorObjetivos >= objetivosTotales):
+        break
+
     iteraciones += 1
     print(iteraciones)
-
-
-
-"""while True:
-    for robot in robots:
-        sePuedeMover = robot.moverse()
-        if sePuedeMover is False:
-            print_explored_area(robot.mapaGlobal, robot.mapaLocal)
-            exit(1)"""
