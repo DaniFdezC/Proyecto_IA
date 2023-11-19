@@ -21,6 +21,7 @@ class Robot:
 
         self.mapaLocal = [[Casilla() for _ in range(self.ancho)] for _ in range(self.alto)]
         self.colaBFS = deque([coordenadas])
+        self.coordenadasPendientesVer: Set[Tuple[int, int]] = set()
 
         self.siguiendoAEstrella = False
         self.rutaAEstrella = None
@@ -65,8 +66,11 @@ class Robot:
                         self.siguiendoAEstrella = True
 
                     for columnaXVecina, filaYVecina in vecinos:
-                        if self.puedoExplorarCasilla((columnaXVecina, filaYVecina)):
-                            self.colaBFS.append((columnaXVecina, filaYVecina))
+                        coordenadaVecina = (columnaXVecina, filaYVecina)
+
+                        if self.puedoExplorarCasilla(coordenadaVecina) and coordenadaVecina not in self.coordenadasPendientesVer:
+                            self.coordenadasPendientesVer.add(coordenadaVecina)
+                            self.colaBFS.append(coordenadaVecina)
 
             return True
 
