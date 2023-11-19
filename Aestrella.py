@@ -1,47 +1,45 @@
 import heapq
 
 from Casilla import *
+from typing import *
 
-def distance(coord1, coord2):
-    # Función para calcular la distancia entre dos coordenadas (euclidiana)
+
+def distancia(coord1: Tuple[int, int], coord2: Tuple[int, int]) -> int:
     return abs(coord1[0] - coord2[0]) + abs(coord1[1] - coord2[1])
 
+
 class Node:
-    def __init__(self, coord):
-        self.coord = coord
-        self.g = float('inf')  # Coste real desde el inicio
-        self.h = 0  # Heurística (distancia estimada al final)
-        self.parent = None
+    def __init__(self, coordenadas: Tuple[int, int], g: int, h: int, parent=None):
+        self.coord = coordenadas
+        self.g = g  # Coste real desde el inicio
+        self.h = h  # Heurística (distancia estimada al final)
+        self.parent: Node = parent
 
     def __lt__(self, other):
         return (self.g + self.h) < (other.g + other.h)
 
-def astar(start, end, obstacles_map):
-    open_list = []
-    closed_set = set()
 
-    start_node = Node(start)
-    end_node = Node(end)
+def astar(start: Tuple[int, int], end: Tuple[int, int], mapaLocal: List[List[Casilla]]) -> List[Tuple[int, int]]:
+    openList: List[Node] = []
+    closedSet: Set[Tuple[int, int]] = set()
 
-    start_node.g = 0
-    start_node.h = distance(start, end)
+    heapq.heappush(openList, Node(coordenadas=start, g=0, h=distancia(start, end)))
 
-    heapq.heappush(open_list, start_node)
+    while openList:
+        nodoActual: Node = heapq.heappop(openList)
 
-    while open_list:
-        current_node = heapq.heappop(open_list)
+        if nodoActual.coord == end:
+            path: List[Tuple[int, int]] = []
 
-        if current_node.coord == end:
-            path = []
-            while current_node:
-                path.append(current_node.coord)
-                current_node = current_node.parent
+            while nodoActual:
+                path.append(nodoActual.coord)
+                nodoActual = nodoActual.parent
             return path[::-1]
 
-        closed_set.add(current_node.coord)
+        closedSet.add(nodoActual.coord)
 
-        x, y = current_node.coord
-        neighbors = [
+        x, y = nodoActual.coord
+        coordenadasVecinas = [
             (x - 1, y - 1),
             (x - 1, y + 1),
             (x - 1, y),
@@ -52,26 +50,28 @@ def astar(start, end, obstacles_map):
             (x, y + 1)
         ]
 
-        for neighbor_coord in neighbors:
+        for coordenadaVecina in coordenadasVecinas:
+            coordenadaVecinaX = coordenadaVecina[0]
+            coordenadaVecinaY = coordenadaVecina[1]
+            maxX = len(mapaLocal[0])
+            maxY = len(mapaLocal)
+
             if (
-                neighbor_coord[0] < 0 or neighbor_coord[0] >= len(obstacles_map) or
-                neighbor_coord[1] < 0 or neighbor_coord[1] >= len(obstacles_map[0])
+                    coordenadaVecinaX < 0 or coordenadaVecinaX >= maxX or
+                    coordenadaVecinaY < 0 or coordenadaVecinaY >= maxY or
+                    mapaLocal[coordenadaVecinaY][coordenadaVecinaX].tipo is TipoCasilla.PARED or
+                    coordenadaVecina in closedSet
             ):
                 continue
 
-            if obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != TipoCasilla.VISITADO or neighbor_coord in closed_set:
-                continue
+            nuevaG = nodoActual.g + 1
+            nuevaH = distancia(coordenadaVecina, end)
 
-            neighbor = Node(neighbor_coord)
-            tentative_g = current_node.g + distance(current_node.coord, neighbor.coord)
-
-            if tentative_g < neighbor.g:
-                neighbor.parent = current_node
-                neighbor.g = tentative_g
-                neighbor.h = distance(neighbor.coord, end)
-
-                if neighbor not in open_list:
-                    heapq.heappush(open_list, neighbor)
+            for node in openList:
+                if node.coord == coordenadaVecina and node.g <= nuevaG:
+                    break
+            else:
+                heapq.heappush(openList, Node(coordenadas=coordenadaVecina, g=nuevaG, h=nuevaH, parent=nodoActual))
 
     return None
 

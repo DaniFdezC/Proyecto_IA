@@ -41,30 +41,45 @@ filas = len(matriz_resultante)
 columnas = len(matriz_resultante[0])
 
 tamano_casilla = 5
-niebla =[[Casilla(TipoCasilla.NIEBLA) for _ in range(columnas)] for _ in range(filas)]
 
 pantalla = pygame.display.set_mode((columnas*tamano_casilla, filas*tamano_casilla))
 pygame.display.set_caption("Matriz de Casillas")
 
 campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
 
-robot1 = Robot(matriz_resultante, (27, 27), campoVision, niebla)
-robot2 = Robot(matriz_resultante, (7, 92), campoVision, niebla)
-robot3 = Robot(matriz_resultante, (9, 147), campoVision, niebla)
-robot4 = Robot(matriz_resultante, (43, 96), campoVision, niebla)
-robot5 = Robot(matriz_resultante, (43, 98), campoVision, niebla)
-robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla)
-robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
-robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
+# robot1 = Robot(matriz_resultante, (27, 27), campoVision, niebla)
+# robot2 = Robot(matriz_resultante, (7, 92), campoVision, niebla)
+# robot3 = Robot(matriz_resultante, (9, 147), campoVision, niebla)
+# robot4 = Robot(matriz_resultante, (43, 96), campoVision, niebla)
+# robot5 = Robot(matriz_resultante, (43, 98), campoVision, niebla)
+# robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla)
+# robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
+# robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
+
+robot1 = Robot(matriz_resultante, (27, 27), campoVision)
+robot2 = Robot(matriz_resultante, (92, 7), campoVision)
+robot3 = Robot(matriz_resultante, (147, 9), campoVision)
+robot4 = Robot(matriz_resultante, (96, 43), campoVision)
+robot5 = Robot(matriz_resultante, (98, 43), campoVision)
+robot6 = Robot(matriz_resultante, (27, 78), campoVision)
+robot7 = Robot(matriz_resultante, (94, 67), campoVision)
+robot8 = Robot(matriz_resultante, (86, 97), campoVision)
 
 robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
-#robots = [robot1]
+# robots = [robot1]
 iteraciones = 0
+robotsAcabados = 0
+nTotalRobots = len(robots)
 
 while True:
     for robot in robots:
-        if robot.moverse2() is False:
+        if robot.moverse() is False:
             robots.remove(robot)
+            robotsAcabados += 1
+
+            if robotsAcabados == nTotalRobots:
+                time.sleep(100)
+                exit(1)
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -74,15 +89,16 @@ while True:
         pantalla.fill((255, 255, 255))
 
         # Dibujar la matriz en la pantalla
-        for i, fila in enumerate(niebla):
-            for j, casilla in enumerate(fila):
+        for y in range(len(matriz_resultante)):
+            for x in range(len(matriz_resultante[y])):
+                casilla = matriz_resultante[y][x]
 
                 if casilla.tipo is TipoCasilla.PARED:
                     color = BLACK
-                elif (i, j) == robot.coordenadas and matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
-                    matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
+                elif (x, y) == robot.coordenadas and matriz_resultante[y][x].tipoObjetivo is TipoObjetivo.LIBRE:
+                    matriz_resultante[y][x].tipoObjetivo = TipoObjetivo.CAPTURADO
                     color = BLUE
-                elif (i, j) == robot.coordenadas:
+                elif (x, y) == robot.coordenadas:
                     color = BLUE
                 elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
                     color = RED
@@ -95,13 +111,13 @@ while True:
                 else:
                     color = WHITE
 
-                pygame.draw.rect(pantalla, color, (j * tamano_casilla, i * tamano_casilla, tamano_casilla, tamano_casilla))
+                pygame.draw.rect(pantalla, color, (x * tamano_casilla, y * tamano_casilla, tamano_casilla, tamano_casilla))
 
         # Actualizar la pantalla
         pygame.display.flip()
-        #time.sleep(0.1)
+        # time.sleep(0.1)
     iteraciones += 1
-    #print(iteraciones)
+    print(iteraciones)
 
 
 
