@@ -5,6 +5,7 @@ from collections import deque
 import numpy as np
 from Aestrella import *
 from typing import *
+from queue import Queue
 
 
 class Robot:
@@ -21,7 +22,7 @@ class Robot:
 
         self.mapaLocal = [[Casilla() for _ in range(self.ancho)] for _ in range(self.alto)]
         self.colaBFS = deque([coordenadas])
-        self.coordenadasPendientesVer: Set[Tuple[int, int]] = set()
+        self.coordenadasPendientesVerSet: Set[Tuple[int, int]] = set()
 
         self.siguiendoAEstrella = False
         self.rutaAEstrella = None
@@ -45,19 +46,14 @@ class Robot:
                     return False
 
                 columanXActual, filaYActual = self.colaBFS.pop()
-                vecinos = [(columanXActual - 1, filaYActual),
-                           (columanXActual + 1, filaYActual),
-                           (columanXActual, filaYActual - 1),
-                           (columanXActual, filaYActual + 1),
-                           (columanXActual - 1, filaYActual - 1),
-                           (columanXActual + 1, filaYActual + 1),
-                           (columanXActual - 1, filaYActual + 1),
-                           (columanXActual + 1, filaYActual - 1)]
+                self.coordenadasPendientesVerSet.discard((columanXActual, filaYActual)) # Borramos del set
 
-                if self.puedoExplorarAlgunaCasilla(vecinos) or self.puedoExplorarCasilla((columanXActual, filaYActual)):
+                vecinos = self._getVecinos(columanXActual, filaYActual)
+
+                if self._puedoExplorarAlgunaCasilla(vecinos) or self._puedoExplorarCasilla((columanXActual, filaYActual)):
                     seguir = False
 
-                    if self.mePuedoMoverSinDarSaltos(columanXActual, filaYActual):
+                    if self._mePuedoMoverSinDarSaltos(columanXActual, filaYActual):
                         self.coordenadas = (columanXActual, filaYActual)
                         self.mapaLocal[filaYActual][columanXActual].tipo = TipoCasilla.VISITADO
                         self.mapaGlobal[filaYActual][columanXActual].tipo = TipoCasilla.VISITADO
@@ -68,20 +64,50 @@ class Robot:
                     for columnaXVecina, filaYVecina in vecinos:
                         coordenadaVecina = (columnaXVecina, filaYVecina)
 
-                        if self.puedoExplorarCasilla(coordenadaVecina) and coordenadaVecina not in self.coordenadasPendientesVer:
-                            self.coordenadasPendientesVer.add(coordenadaVecina)
+                        if self._puedoExplorarCasilla(
+                                coordenadaVecina) and coordenadaVecina not in self.coordenadasPendientesVerSet:
+                            self.coordenadasPendientesVerSet.add(coordenadaVecina)
                             self.colaBFS.append(coordenadaVecina)
 
             return True
 
-    def puedoExplorarAlgunaCasilla(self, coordenadasCasillas: List[Tuple[int, int]]) -> bool:
+    def intercambiarMapa(self, otroRobot):
+        self._mezclarMapaLocales(otroRobot)
+        self._borrarElementosPilaBFS()
+
+    def _mezclarMapaLocales(self, otroRobot):
+        for otroRobotMapaLocalY in range(len(otroRobot.mapaLocal)):
+            for otroRobotMapaLocalX in range(len(otroRobot.mapaLocal[otroRobotMapaLocalY])):
+                self.mapaLocal[otroRobotMapaLocalY][otroRobotMapaLocalX] = otroRobot.mapaLocal[otroRobotMapaLocalY][otroRobotMapaLocalX]
+
+    def _borrarElementosPilaBFS(self):
+        numeroElementosBorrados = 0
+
+        for indiceCoordenadaBfs, coordenadaBfs in enumerate(list(self.colaBFS)):
+            vecinos = self._getVecinos(coordenadaBfs[0], coordenadaBfs[1])
+            if not self._puedoExplorarAlgunaCasilla(vecinos) and not self._puedoExplorarCasilla(coordenadaBfs):
+                self.coordenadasPendientesVerSet.discard(coordenadaBfs)
+                del self.colaBFS[indiceCoordenadaBfs - numeroElementosBorrados]
+                numeroElementosBorrados += 1
+
+    def _puedoExplorarAlgunaCasilla(self, coordenadasCasillas: List[Tuple[int, int]]) -> bool:
         for coordenadaCasilla in coordenadasCasillas:
-            if self.puedoExplorarCasilla(coordenadaCasilla):
+            if self._puedoExplorarCasilla(coordenadaCasilla):
                 return True
 
         return False
 
-    def puedoExplorarCasilla(self, coordenadaCasilla: Tuple[int, int]) -> bool:
+    def _getVecinos(self, x: int, y: int) -> List[Tuple[int, int]]:
+        return [(x - 1, y),
+                (x + 1, y),
+                (x, y - 1),
+                (x, y + 1),
+                (x - 1, y - 1),
+                (x + 1, y + 1),
+                (x - 1, y + 1),
+                (x + 1, y - 1)]
+
+    def _puedoExplorarCasilla(self, coordenadaCasilla: Tuple[int, int]) -> bool:
         maxY, maxX = self.alto, self.ancho
         x, y = coordenadaCasilla
 
@@ -91,7 +117,7 @@ class Robot:
 
         return dentroDeLosLimites and noHayPared and noLoHeVisitado
 
-    def mePuedoMoverSinDarSaltos(self, nuevaX, nuevaY):
+    def _mePuedoMoverSinDarSaltos(self, nuevaX, nuevaY):
         difX = abs(self.coordenadas[0] - nuevaX)
         difY = abs(self.coordenadas[1] - nuevaY)
 
