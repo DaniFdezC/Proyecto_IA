@@ -47,14 +47,14 @@ pygame.display.set_caption("Matriz de Casillas")
 
 campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
 
-robot1 = Robot(matriz_resultante, (27, 27), campoVision, niebla)
-robot2 = Robot(matriz_resultante, (7, 92), campoVision, niebla)
-robot3 = Robot(matriz_resultante, (9, 147), campoVision, niebla)
-robot4 = Robot(matriz_resultante, (43, 96), campoVision, niebla)
-robot5 = Robot(matriz_resultante, (43, 98), campoVision, niebla)
-robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla)
-robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
-robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
+robot1 = Robot(matriz_resultante, (27, 27), campoVision, niebla, pantalla, pygame)
+robot2 = Robot(matriz_resultante, (7, 92), campoVision, niebla, pantalla, pygame)
+robot3 = Robot(matriz_resultante, (9, 147), campoVision, niebla, pantalla, pygame)
+robot4 = Robot(matriz_resultante, (43, 96), campoVision, niebla, pantalla, pygame)
+robot5 = Robot(matriz_resultante, (43, 98), campoVision, niebla, pantalla, pygame)
+robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla, pantalla, pygame)
+robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla, pantalla, pygame)
+robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla, pantalla, pygame)
 
 #robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
 robots = [robot1]
@@ -95,7 +95,7 @@ while True:
 
         # Actualizar la pantalla
         pygame.display.flip()
-        time.sleep(0.1)
+       # time.sleep(0.25)
     iteraciones += 1
     print(iteraciones)
 

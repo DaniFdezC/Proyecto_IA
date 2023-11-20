@@ -1,4 +1,5 @@
 from enum import Enum
+import random
 from Casilla import *
 from Algoritmo import *
 from collections import deque
@@ -9,17 +10,21 @@ class Robot:
 
     VIEWPORT_RADIUS = 10
 
-    def __init__(self, mapaGlobal, coordenadas, campoVision, niebla):
+    def __init__(self, mapaGlobal, coordenadas, campoVision, niebla,pantalla , pygame):
         self.mapaGlobal = mapaGlobal
         self.niebla = niebla
         self.campoVision = campoVision
         self.coordenadas = coordenadas
+        self.pantalla = pantalla
+        self.pygame = pygame
 
         self.alto = len(mapaGlobal)
         self.ancho = len(mapaGlobal[0])
 
         #self.mapaLocal =[[Casilla() for _ in range(self.ancho)] for _ in range(self.alto)]
         self.mapaLocal = niebla
+        self.nearest_fog = []
+        self.fog_buffer = []
         self.bfsQueue = deque([coordenadas])
         self.siguiendoAEstrella = False
         self.rutaAEstrella = None
@@ -35,42 +40,37 @@ class Robot:
         #     self.siguiendoAEstrella = True
         # else:
         
-            nieblas_cercanas = self.find_nearest_fog()
-            print("Niebla cercana ", nieblas_cercanas)
+            self.find_nearest_fog()
+            for (x, y) in self.nearest_fog:
+                self.pygame.draw.rect(self.pantalla, (225, 255, 0), (y * 5, x * 5, 5, 5))
+                self.pygame.display.flip()
             
             # Do (find A* path to nearest fog) while A* path is empty
             while True:
-                niebla_mas_cercana = nieblas_cercanas.pop(-1)
-                print("Niebla mas cercana ",niebla_mas_cercana)
-                
-                self.rutaAEstrella = astar(self.coordenadas, niebla_mas_cercana, self.mapaLocal)
+                print("Niebla cercana ", self.nearest_fog)
+                print("buffer ", self.fog_buffer)
+                niebla_mas_cercana = self.nearest_fog.pop(random.randint(0, len(self.nearest_fog) - 1))
+                self.fog_buffer.append(niebla_mas_cercana)
+                #print("Posicion actual ",self.coordenadas)
+                #print("Niebla mas cercana ",niebla_mas_cercana)
+                if (self.coordenadas in self.nearest_fog):
+                    self.nearest_fog = []
+                    self.fog_buffer = []
+                    self.rutaAEstrella = [self.coordenadas]
+                    break
+                self.pygame.draw.rect(self.pantalla, (0, 255, 0), (niebla_mas_cercana[1] * 5, niebla_mas_cercana[0] * 5, 5, 5))
+                self.pygame.display.flip()
+                #self.rutaAEstrella = self.get_linear_path(self.coordenadas, niebla_mas_cercana)
+                self.rutaAEstrella = astar(self.coordenadas, niebla_mas_cercana, self.mapaLocal, self.pygame, self.pantalla, "exploracion")
                 print("Ruta A* ",self.rutaAEstrella)
                 if self.rutaAEstrella != None:
                     break
+            self.nearest_fog.extend(self.fog_buffer)
+            self.fog_buffer = []
             self.siguiendoAEstrella = True
             self.seguirRuta()
             
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         
             # if not self.bfsQueue:
@@ -118,16 +118,17 @@ class Robot:
     
     def quitar_niebla(self):
         robot_x, robot_y = self.coordenadas
-        for i in range(max(0, robot_x - self.VIEWPORT_RADIUS), min(self.alto, robot_x + self.VIEWPORT_RADIUS + 1)):
-            for j in range(max(0, robot_y - self.VIEWPORT_RADIUS), min(self.ancho, robot_y + self.VIEWPORT_RADIUS + 1)):
+        for i in range(max(0, robot_x - self.VIEWPORT_RADIUS), min(self.ancho, robot_x + self.VIEWPORT_RADIUS + 1)):
+            for j in range(max(0, robot_y - self.VIEWPORT_RADIUS), min(self.alto, robot_y + self.VIEWPORT_RADIUS + 1)):
                 distance = np.sqrt((i - robot_x) ** 2 + (j - robot_y) ** 2)
                 if distance <= self.VIEWPORT_RADIUS:
                     self.niebla[i][j].tipo = self.mapaGlobal[i][j].tipo
                     self.mapaLocal[i][j].tipo = self.mapaGlobal[i][j].tipo
+                    if (i, j) in self.nearest_fog:
+                        self.nearest_fog.remove((i, j))
 
     def find_nearest_fog(self):
         robot_x, robot_y = self.coordenadas
-        nearest_fogs = []
         #nearest_fog = None
         min_distance = float('inf')
                         
@@ -138,11 +139,41 @@ class Robot:
                     if distance <= min_distance:
                         min_distance = distance
                         #nearest_fog = (i, j)
-                        nearest_fogs.append((i, j))
-
-
-        return nearest_fogs
+                        self.nearest_fog.append((i, j))
+            
+        return
     
+    def get_linear_path(self, start, end):
+        x1, y1 = start
+        x2, y2 = end
+        coordinates = []
+
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = -1 if x1 > x2 else 1
+        sy = -1 if y1 > y2 else 1
+        err = dx - dy
+
+        while True:
+            print("### Evaluando... ", (x1, y1)," = ", self.mapaLocal[x1][y1].tipo)
+            if self.mapaLocal[x1][y1].tipo == TipoCasilla.NADA:
+                coordinates.append((x1, y1))
+            else:
+                break
+
+            if x1 == x2 and y1 == y2:
+                break
+            
+            e2 = 2 * err
+            if e2 > -dy:
+                err -= dy
+                x1 += sx
+            if e2 < dx:
+                err += dx
+                y1 += sy
+        print("Coordenadas... ", coordinates)
+        return coordinates
+        
     def seguirRuta(self):
         self.coordenadas = self.rutaAEstrella.pop(0)
         self.quitar_niebla()
