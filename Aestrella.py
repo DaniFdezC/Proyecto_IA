@@ -77,7 +77,7 @@ def astar(start, end, obstacles_map, pygame, pantalla, type):
 
         for neighbor_coord in neighbors:
             steps += 1
-            if steps > 20000:
+            if steps > 30000:
                 return None
             
             # pygame.draw.rect(pantalla, (229, 137, 194), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
