@@ -13,7 +13,6 @@ from typing import *
 HEIGHT = 500
 WIDTH = 750
 
-
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
@@ -21,17 +20,6 @@ YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (105, 105, 105)
-
-
-"""def print_explored_area(mapaGlobal, mapaLocal):
-    
-    for row in range(len(mapaGlobal)):
-        for col in range(len(mapaGlobal[0])):
-            if mapaLocal[row][col].tipo is TipoCasilla.VISITADO:
-                print("V", end=" ")  # Visited
-            else:
-                print("X" if mapaGlobal[row][col].tipo == TipoCasilla.PARED else " ", end=" ")  # Wall or free space
-        print()"""
 
 
 ruta_imagen = "./Imagenes/mapaDefinitivo.png"
@@ -125,22 +113,17 @@ while True:
 
     for robot in robots:
         for otroRobot in robots:
-            if ((robot, otroRobot) in robotsIntercambiadoMapas
+            if (robot.coordenadas is otroRobot.coordenadas
+                    or (robot, otroRobot) in robotsIntercambiadoMapas
                     or (otroRobot, robot) in robotsIntercambiadoMapas):
                 continue
 
-            distancia = abs(robot.coordenadas[0] - otroRobot.coordenadas[0]) + abs(robot.coordenadas[1] - otroRobot.coordenadas[1])
-            if distancia <= campoVisionParaVerOtroRobot:
-                otroRobot.intercambiarMapa(robot)
-                robot.intercambiarMapa(robot)
+            distanciaX = abs(robot.coordenadas[0] - otroRobot.coordenadas[0])
+            distanciaY = abs(robot.coordenadas[1] - otroRobot.coordenadas[1])
+
+            if distanciaX <= campoVisionParaVerOtroRobot and distanciaY <= campoVisionParaVerOtroRobot:
+                # otroRobot.intercambiarMapa(robot, False)
+                # robot.intercambiarMapa(robot, True)
 
                 robotsIntercambiadoMapas.add((robot, otroRobot))
                 robotsIntercambiadoMapas.add((otroRobot, otroRobot))
-
-
-"""while True:
-    for robot in robots:
-        sePuedeMover = robot.moverse()
-        if sePuedeMover is False:
-            print_explored_area(robot.mapaGlobal, robot.mapaLocal)
-            exit(1)"""
