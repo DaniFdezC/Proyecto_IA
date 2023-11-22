@@ -6,6 +6,7 @@ class TipoCasilla(Enum):
     VISITADO = 2
     OBJETIVO = 3
     NIEBLA = 4
+    ROBOT = 5
 
 class TipoObjetivo(Enum):
     NADA = 0,

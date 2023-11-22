@@ -1,13 +1,9 @@
 import sys
-import time
-
-from CreadorMapa import convertirImagenAMatriz
-from Robot import Robot
-import matplotlib.pyplot as plt
+import copy
 import pygame
-import numpy as np
-from collections import deque
+from CreadorMapa import convertirImagenAMatriz
 from Casilla import *
+from Robot import Robot
 
 HEIGHT = 500
 WIDTH = 750
@@ -20,90 +16,79 @@ YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+class Main:
+    pass
+    def __init__(self):
+        self.ruta_imagen = "./Imagenes/mapaDefinitivo.png"
+        self.matriz_resultante = convertirImagenAMatriz(self.ruta_imagen)
+        self.matriz_resultante[3][98].tipoObjetivo = TipoObjetivo.LIBRE
 
-"""def print_explored_area(mapaGlobal, mapaLocal):
-    
-    for row in range(len(mapaGlobal)):
-        for col in range(len(mapaGlobal[0])):
-            if mapaLocal[row][col].tipo is TipoCasilla.VISITADO:
-                print("V", end=" ")  # Visited
-            else:
-                print("X" if mapaGlobal[row][col].tipo == TipoCasilla.PARED else " ", end=" ")  # Wall or free space
-        print()"""
+        self.filas = len(self.matriz_resultante)
+        self.columnas = len(self.matriz_resultante[0])
 
+        self.tamano_casilla = 5
+        self.iteraciones = 0
 
-ruta_imagen = "./Imagenes/mapaDefinitivo.png"
-matriz_resultante = convertirImagenAMatriz(ruta_imagen)
-matriz_resultante[3][98].tipoObjetivo = TipoObjetivo.LIBRE
+        self.niebla = self.mapa_vacio(self.filas, self.columnas)
 
-filas = len(matriz_resultante)
-columnas = len(matriz_resultante[0])
+        self.pantalla = pygame.display.set_mode((self.columnas*self.tamano_casilla, self.filas*self.tamano_casilla))
+        pygame.display.set_caption("Matriz de Casillas")
 
-tamano_casilla = 5
-niebla =[[Casilla(TipoCasilla.NIEBLA) for _ in range(columnas)] for _ in range(filas)]
+        self.campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
+        robots = []
 
-pantalla = pygame.display.set_mode((columnas*tamano_casilla, filas*tamano_casilla))
-pygame.display.set_caption("Matriz de Casillas")
+        self.robot1 = Robot(self.matriz_resultante, (27, 27), self.campoVision, self.niebla, self.pantalla, pygame, robots)
+        self.robot2 = Robot(self.matriz_resultante, (7, 92), self.campoVision, self.niebla, self.pantalla, pygame, robots)
+        self.robot3 = Robot(self.matriz_resultante, (9, 147), self.campoVision, self.niebla, self.pantalla, pygame, robots)
+        self.robot4 = Robot(self.matriz_resultante, (43, 96), self.campoVision, self.niebla, self.pantalla, pygame, robots)
+        self.robot5 = Robot(self.matriz_resultante, (43, 98), self.campoVision, self.niebla, self.pantalla, pygame, robots)
+        self.robot6 = Robot(self.matriz_resultante, (78, 27), self.campoVision, self.niebla, self.pantalla, pygame, robots)
+        self.robot7 = Robot(self.matriz_resultante, (67, 94), self.campoVision, self.niebla, self.pantalla, pygame, robots)
+        self.robot8 = Robot(self.matriz_resultante, (97, 86), self.campoVision, self.niebla, self.pantalla, pygame, robots)
 
-campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
+        self.robots = [self.robot1, self.robot2, self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8]
+        #self.robots = [ self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8]
 
-robot1 = Robot(matriz_resultante, (27, 27), campoVision, niebla, pantalla, pygame)
-robot2 = Robot(matriz_resultante, (7, 92), campoVision, niebla, pantalla, pygame)
-robot3 = Robot(matriz_resultante, (9, 147), campoVision, niebla, pantalla, pygame)
-robot4 = Robot(matriz_resultante, (43, 96), campoVision, niebla, pantalla, pygame)
-robot5 = Robot(matriz_resultante, (43, 98), campoVision, niebla, pantalla, pygame)
-robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla, pantalla, pygame)
-robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla, pantalla, pygame)
-robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla, pantalla, pygame)
+    def mapa_vacio(self, filas, columnas):
+        return [[Casilla(TipoCasilla.NIEBLA) for _ in range(columnas)] for _ in range(filas)]
 
-#robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
-robots = [robot1]
-iteraciones = 0
-while True:
-    for robot in robots:
-        robot.moverse()
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-        # Limpiar la pantalla
-        pantalla.fill((255, 255, 255))
+    def run(self):
+        while True:
+            for robot in self.robots:
+                robot.moverse()
+                for evento in pygame.event.get():
+                    if evento.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
 
-        # Dibujar la matriz en la pantalla
-        for i, fila in enumerate(niebla):
-            for j, casilla in enumerate(fila):
+                self.pantalla.fill((255, 255, 255))
 
-                if casilla.tipo is TipoCasilla.PARED:
-                    color = BLACK
-                elif (i, j) == robot.coordenadas and matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
-                    matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
-                    color = BLUE
-                elif (i, j) == robot.coordenadas:
-                    color = BLUE
-                elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
-                    color = RED
-                elif casilla.tipo is TipoCasilla.NIEBLA:
-                    color = GREY
-                elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
-                    color=GREEN
-                elif casilla.tipo is TipoCasilla.VISITADO:
-                    color = YELLOW
-                else:
-                    color = WHITE
+                for i, fila in enumerate(self.niebla):
+                    for j, casilla in enumerate(fila):
+                        if casilla.tipo is TipoCasilla.PARED:
+                            color = BLACK
+                        elif (i, j) == robot.coordenadas and self.matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
+                            self.matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
+                            color = BLUE
+                        elif (i, j) in map(lambda x: x.coordenadas, self.robots):
+                            color = BLUE
+                        elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
+                            color = RED
+                        elif casilla.tipo is TipoCasilla.NIEBLA:
+                            color = GREY
+                        elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
+                            color = GREEN
+                        elif casilla.tipo is TipoCasilla.VISITADO:
+                            color = YELLOW
+                        else:
+                            color = WHITE
 
-                pygame.draw.rect(pantalla, color, (j * tamano_casilla, i * tamano_casilla, tamano_casilla, tamano_casilla))
+                        pygame.draw.rect(self.pantalla, color, (j * self.tamano_casilla, i * self.tamano_casilla, self.tamano_casilla, self.tamano_casilla))
 
-        # Actualizar la pantalla
-        pygame.display.flip()
-       # time.sleep(0.25)
-    iteraciones += 1
-    print(iteraciones)
+                pygame.display.flip()
+            self.iteraciones += 1
+            print(self.iteraciones)
 
-
-
-"""while True:
-    for robot in robots:
-        sePuedeMover = robot.moverse()
-        if sePuedeMover is False:
-            print_explored_area(robot.mapaGlobal, robot.mapaLocal)
-            exit(1)"""
+if __name__ == "__main__":
+    main = Main()
+    main.run()

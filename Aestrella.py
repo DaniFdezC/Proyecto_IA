@@ -22,7 +22,7 @@ class Node:
     def __lt__(self, other):
         return (self.g + self.h) < (other.g + other.h)
 
-def astar(start, end, obstacles_map, pygame, pantalla, type):
+def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
     alto = len(obstacles_map)
     ancho = len(obstacles_map[0])
     steps = 0
@@ -39,12 +39,17 @@ def astar(start, end, obstacles_map, pygame, pantalla, type):
     open_list.append(start_node)
 
     while open_list:
-        current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):
-            if item.f < current_node.f:
-                current_node = item
-                current_index = index
+        if type == "victim":
+            current_node = open_list[0]
+            current_index = 0
+            for index, item in enumerate(open_list):
+                if item.f < current_node.f:
+                    current_node = item
+                    current_index = index
+        elif type == "dfs":
+            current_node = open_list[-1]
+            current_index = len(open_list)-1
+            
         # Pop current off open list, add to closed list
         open_list.pop(current_index)
         closed_set.add(current_node.coord)
@@ -106,35 +111,31 @@ def astar(start, end, obstacles_map, pygame, pantalla, type):
                 continue
 
             neighbor = Node(neighbor_coord)
+            neighbor.parent = current_node
 
+            if type == "dfs":
+                open_list.append(neighbor)
+                pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
+                pygame.display.flip()
+                break
+            
             # Create the f, g, and h values
             neighbor.g = current_node.g + hypot(current_node.coord, neighbor.coord)
             neighbor.h = distance(neighbor.coord, end)
             neighbor.f = neighbor.g + neighbor.h
 
-            exixts = False
+            exists = False
             # Child is already in the open list
             for open_node in open_list:
                 if neighbor.coord == open_node.coord and neighbor.g > open_node.g:
-                    exixts = True
+                    exists = True
                     break 
             
-            if exixts:
+            if exists:
                 break
-            neighbor.parent = current_node
             open_list.append(neighbor)
             pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
             pygame.display.flip()
-
-            # tentative_g = current_node.g + 
-
-            # if tentative_g < neighbor.g:
-            #     neighbor.parent = current_node
-            #     neighbor.g = tentative_g
-            #     neighbor.h = distance(neighbor.coord, end)
-
-            #     if neighbor not in open_list:
-            #         open_list.append(neighbor)
                    
 
     return None
