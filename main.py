@@ -110,14 +110,14 @@ while True:
                     mapaGlobal[y][x].tipoObjetivo = TipoObjetivo.CAPTURADO
                     contadorObjetivos +=1
                     color = BLUE
-                elif (x, y) == robot.coordenadas:
+                elif (x, y) in map(lambda x_robot: x_robot.coordenadas, robots):
                     color = BLUE
                 elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
                     color = RED
                 elif casilla.tipo is TipoCasilla.NIEBLA:
                     color = GREY
                 elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
-                    color=GREEN
+                    color = GREEN
                 elif casilla.tipo is TipoCasilla.VISITADO or casilla.tipo is TipoCasilla.VISIONADA:
                     color = YELLOW
                 else:
@@ -127,7 +127,7 @@ while True:
 
         # Actualizar la pantalla
         pygame.display.flip()
-        # time.sleep(0.1)
+        #time.sleep(0.1)
     iteraciones += 1
     print(iteraciones)
 
@@ -148,8 +148,8 @@ while True:
             distanciaY = abs(robot.coordenadas[1] - otroRobot.coordenadas[1])
 
             if distanciaX <= campoVisionParaVerOtroRobot and distanciaY <= campoVisionParaVerOtroRobot:
-                # otroRobot.intercambiarMapa(robot, False)
-                # robot.intercambiarMapa(robot, True)
+                #otroRobot.intercambiarMapa(robot, False)
+                #robot.intercambiarMapa(robot, True)
 
                 robotsIntercambiadoMapas.add((robot, otroRobot))
                 robotsIntercambiadoMapas.add((otroRobot, otroRobot))
