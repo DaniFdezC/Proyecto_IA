@@ -19,7 +19,8 @@ BLACK = (0, 0, 0)
 class Main:
     pass
     def __init__(self):
-        self.ruta_imagen = "./Imagenes/mapaDefinitivo.png"
+        self.ruta_imagen = "./Imagenes/mapaDefinitivoConVictimas.png"
+        #self.ruta_imagen = "./Imagenes/mapaDefinitivo.png"
         self.matriz_resultante = convertirImagenAMatriz(self.ruta_imagen)
         self.matriz_resultante[3][98].tipoObjetivo = TipoObjetivo.LIBRE
 
@@ -46,9 +47,9 @@ class Main:
         self.robot7 = Robot(self.matriz_resultante, (67, 94), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
         self.robot8 = Robot(self.matriz_resultante, (97, 86), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
         
-        self.robots.extend([self.robot1, self.robot2, self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8])
+        #self.robots.extend([self.robot1, self.robot2, self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8])
         
-        #self.robots = [ self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8]
+        self.robots = [self.robot1]
 
     def mapa_vacio(self, filas, columnas):
         return [[Casilla(TipoCasilla.NIEBLA) for _ in range(columnas)] for _ in range(filas)]
@@ -80,7 +81,11 @@ class Main:
                         elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
                             color = GREEN
                         elif casilla.tipo is TipoCasilla.VISITADO:
-                            color = YELLOW
+                            color = YELLOW 
+                        elif casilla.tipo is TipoCasilla.VICTIMA:
+                            color = RED                        
+                        elif casilla.tipo is TipoCasilla.RESCATADO:
+                            color = GREEN
                         else:
                             color = WHITE
 

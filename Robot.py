@@ -11,11 +11,13 @@ from Aestrella import *
 class Robot:
     pass
     VIEWPORT_RADIUS = 20
-    COMUNICATION_RADIUS = 20
+    COMUNICATION_RADIUS = 10
     NEAR_FOG_THRESHOLD = 1
 
     def __init__(self, mapaGlobal, coordenadas, campoVision, niebla,pantalla , pygame, robots):
         self.robots = robots
+        self.objetivos = []
+        self.objetivos_ignorados = []
         
         self.mapaGlobal = mapaGlobal
         self.niebla = niebla
@@ -37,8 +39,6 @@ class Robot:
         self.quieto = False
         
         self.mapaGlobal[coordenadas[0]][coordenadas[1]].tipo = TipoCasilla.ROBOT
-        
-        
 
     def moverse(self):
         if self.quieto:
@@ -49,74 +49,30 @@ class Robot:
             self.seguirRuta()
 
         if self.siguiendoAEstrella is False:
-        # Hay victima ? Ir a victima : Ir a niebla
-        # if self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipoObjetivo is TipoObjetivo.LIBRE:
-        #     self.rutaAEstrella = astar(self.coordenadas, self.find_nearest_fog(), self.mapaLocal)
-        #     self.siguiendoAEstrella = True
-        # else:
-        
-            self.find_nearest_fog()
-            # Pintar puntos cercanos de amarillo
-            for (x, y) in self.nearest_fog:
-                self.pygame.draw.rect(self.pantalla, (225, 255, 0), (y * 5, x * 5, 5, 5))
-                self.pygame.display.flip()
+            #Hay victima ? Ir a victima : Ir a niebla
+            if len(self.objetivos) > 0:
+                for objetivo in self.objetivos:
+                    print("Objetivo: ", objetivo)
+                    self.rutaAEstrella = astar(self.coordenadas, objetivo, self.mapaLocal, self.pygame, self.pantalla, "victima")
+                    for (x, y) in self.rutaAEstrella:
+                        self.pygame.draw.rect(self.pantalla, (0, 255, 0), (y * 5, x * 5, 5, 5))
+                        self.pygame.display.flip()
+                    if self.rutaAEstrella != None:
+                        self.siguiendoAEstrella = True
+                        break
+                    else:
+                        self.objetivos.pop(0)
+                        self.objetivos_ignorados.extend(objetivo)
+            else:
+                self.find_nearest_fog()
+                # Pintar puntos cercanos de amarillo
+                for (x, y) in self.nearest_fog:
+                    self.pygame.draw.rect(self.pantalla, (225, 255, 0), (y * 5, x * 5, 5, 5))
+                    self.pygame.display.flip()
+                self.explorar_niebla()
             
-            # Do (find A* path to nearest fog) while A* path is empty
-            while True:
-                # if not self.nearest_fog:
-                #     print("No hay niebla")
-                #     self.find_nearest_fog(2)
-                if not self.nearest_fog:
-                  #  print("No hay niebla")
-                    self.quieto = True
-                    return
-                niebla_mas_cercana = self.nearest_fog.pop(random.randint(0, len(self.nearest_fog)-1))
-                self.fog_buffer.append(niebla_mas_cercana)
-                if (self.coordenadas in self.nearest_fog):
-                    self.nearest_fog = []
-                    self.fog_buffer = []
-                    self.rutaAEstrella = [self.coordenadas]
-                    break
-                # Pintar punto de niebla mas cercano de verde
-                self.pygame.draw.rect(self.pantalla, (0, 255, 0), (niebla_mas_cercana[1] * 5, niebla_mas_cercana[0] * 5, 5, 5))
-                self.pygame.display.flip()
-                self.rutaAEstrella = astar(self.coordenadas, niebla_mas_cercana, self.mapaLocal, self.pygame, self.pantalla, "victim")
-                if self.rutaAEstrella != None:
-                    break
-            self.nearest_fog.extend(self.fog_buffer)
-            self.fog_buffer = []
-            # Sort nearest fog by distance
-            self.siguiendoAEstrella = True
-            self.seguirRuta()
-            
-        
-
-        
-            # if not self.bfsQueue:
-            #     return False
-
-            # # Ir haciendo pop hasta que encontremos uno que almenos 1 vecino no este visitado.
-            # current_row, current_col = self.bfsQueue.pop()
-            # neighbors = [(current_row - 1, current_col), (current_row + 1, current_col),
-            #              (current_row, current_col - 1), (current_row, current_col + 1),
-            #              (current_row - 1, current_col - 1), (current_row + 1, current_col + 1),
-            #              (current_row - 1, current_col +1), (current_row + 1, current_col -1)]
-
-            # if self.mePuedoMoverSinDarSaltos(current_row, current_col):
-            #     self.coordenadas = (current_row, current_col)
-            # else:
-            #     self.rutaAEstrella = astar(self.coordenadas, (current_row, current_col), self.mapaLocal)
-            #     self.siguiendoAEstrella = True
-
-
-            # for neighbor_row, neighbor_col in neighbors:
-            #     if self.is_valid_move(neighbor_row, neighbor_col):
-            #         self.bfsQueue.append((neighbor_row, neighbor_col))
-
-            #         self.mapaLocal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
-            #         self.mapaGlobal[neighbor_row][neighbor_col].tipo = TipoCasilla.VISITADO
-            #         self.quitar_niebla()
-
+            if (self.rutaAEstrella != None and len(self.rutaAEstrella) > 0):
+                self.seguirRuta()
             return True
 
     def mePuedoMoverSinDarSaltos(self, nuevaX, nuevaY):
@@ -144,7 +100,11 @@ class Robot:
                 if distance <= self.VIEWPORT_RADIUS:
                     self.niebla[i][j].tipo = self.mapaGlobal[i][j].tipo
                     self.mapaLocal[i][j].tipo = self.mapaGlobal[i][j].tipo
-                    if (i, j) in self.nearest_fog:
+                    if (self.mapaGlobal[i][j].tipo == TipoCasilla.VICTIMA and (i, j) not in self.objetivos):
+                        self.objetivos.append((i, j))
+                        print("Victima encontrada en ", (i, j), self.objetivos)
+                        continue
+                    elif (i, j) in self.nearest_fog:
                         self.nearest_fog.remove((i, j))
 
     def find_nearest_fog(self, scale = 1):
@@ -189,6 +149,30 @@ class Robot:
     #                     min_distance = distance
     #                     nearest_fog.append((i, j))
     #     return nearest_fog
+       
+    def explorar_niebla(self):
+        while True:
+            if not self.nearest_fog:
+                self.quieto = True
+                return
+            niebla_mas_cercana = self.nearest_fog.pop(random.randint(0, len(self.nearest_fog)-1))
+            self.fog_buffer.append(niebla_mas_cercana)
+            if (self.coordenadas in self.nearest_fog):
+                self.nearest_fog = []
+                self.fog_buffer = []
+                self.rutaAEstrella = [self.coordenadas]
+                break
+            # Pintar punto de niebla mas cercano de verde
+            self.pygame.draw.rect(self.pantalla, (0, 255, 0), (niebla_mas_cercana[1] * 5, niebla_mas_cercana[0] * 5, 5, 5))
+            self.pygame.display.flip()
+            self.rutaAEstrella = astar(self.coordenadas, niebla_mas_cercana, self.mapaLocal, self.pygame, self.pantalla, "explorar")
+            if self.rutaAEstrella != None:
+                # Sort nearest fog by distance
+                self.siguiendoAEstrella = True
+                break
+        self.nearest_fog.extend(self.fog_buffer)
+        self.fog_buffer = []
+
         
     def seguirRuta(self):
         self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
@@ -198,6 +182,9 @@ class Robot:
         self.quitar_niebla()
         self.comunicar()
         if len(self.rutaAEstrella) == 0:
+            if self.coordenadas in self.objetivos:
+                self.objetivos.remove(self.coordenadas)
+                self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
             self.siguiendoAEstrella = False
             
     def comunicar(self):
@@ -214,8 +201,7 @@ class Robot:
         if len(vecinos) > 1:
                 #print("Vecinos: ",vecinos)
                 self.compartir_con(vecinos)
-                    
-# from main import compartir_con
+
     def compartir_con(self, vecinos):
         print("Compartiendo mapa con ", vecinos)
         mapa_compartido = self.mapa_vacio(self.alto, self.ancho)

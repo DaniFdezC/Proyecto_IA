@@ -39,19 +39,22 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
     open_list.append(start_node)
 
     while open_list:
-        if type == "victim":
-            current_node = open_list[0]
-            current_index = 0
-            for index, item in enumerate(open_list):
-                if item.f < current_node.f:
-                    current_node = item
-                    current_index = index
+        current_index = 0
+        current_node = None
+        if ((type == "victima") or (type == "explorar")):
+            current_node = min(open_list, key=lambda node: node.f)
+            open_list.remove(current_node)
+            # current_index = 0
+            # for index, item in enumerate(open_list):
+            #     if item.f < current_node.f:
+            #         current_node = item
+            #         current_index = index
         elif type == "dfs":
             current_node = open_list[-1]
             current_index = len(open_list)-1
             
         # Pop current off open list, add to closed list
-        open_list.pop(current_index)
+        #open_list.pop(current_index)
         closed_set.add(current_node.coord)
         #print(" -- Current", current_node.coord)
         #print(" -- End -- ", end, (alto, ancho))
@@ -60,29 +63,44 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
             while current_node:
                 path.append(current_node.coord)
                 current_node = current_node.parent
-            if len(path) > 1: # Para que no se pare en la niebla
+            if len(path) > 1 and type != "victima": # Para que no se pare en la niebla
                 path.pop(0)
+            if type == "victima":
+                print("Camino Hacia Victima ", path)
             return path[::-1]
 
 
         x, y = current_node.coord
+        pantalla.fill((255, 255, 255))
         pygame.draw.rect(pantalla, (255, 0, 0), (y * 5, x * 5, 5, 5))
         pygame.display.flip()
-       # print("--- Movimiento a ", current_node.coord)
+        #print("--- Movimiento a ", current_node.coord)
+        # neighbors = [
+        #     (x - 1, y - 1),
+        #     (x, y - 1),
+        #     (x + 1, y - 1),
+        #     (x - 1, y),
+        #     (x + 1, y),
+        #     (x - 1, y + 1),
+        #     (x, y + 1),
+        #     (x + 1, y + 1)
+        # ]
+        #LEFT-DOWN-RIGHT-UP
         neighbors = [
-            (x - 1, y - 1),
-            (x - 1, y + 1),
             (x - 1, y),
+            (x - 1, y + 1),
+            (x, y + 1),
+            (x + 1, y + 1),
             (x + 1, y),
             (x + 1, y - 1),
-            (x + 1, y + 1),
             (x, y - 1),
-            (x, y + 1)
+            (x - 1, y - 1)
         ]
 
         for neighbor_coord in neighbors:
             steps += 1
             if steps > 30000:
+                print("No se encontro camino")
                 return None
             
             # pygame.draw.rect(pantalla, (229, 137, 194), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
@@ -101,12 +119,12 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
                 continue
             
             #print("A* --> ", neighbor_coord,  obstacles_map[neighbor_coord[1]][neighbor_coord[0]].tipo, obstacles_map[neighbor_coord[1]][neighbor_coord[0]].tipo != TipoCasilla.NADA)
-           # print("Current neighbor", neighbor_coord, obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo )
-           # print("Closed Set", closed_set)
-            if (obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo == TipoCasilla.NIEBLA and type != "victima"):
-               print("TOQUE NIEBLA! ", neighbor_coord)
+           #print("Current neighbor", neighbor_coord, obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo )
+            #print("Closed Set", closed_set)
+            if ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo == TipoCasilla.NIEBLA) and (type != "victima")):
+               print("TOQUE NIEBLA! ", neighbor_coord, type)
                end = neighbor_coord
-            elif ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != TipoCasilla.NADA and neighbor_coord != end)):
+            elif ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != TipoCasilla.NADA) and (neighbor_coord != end)):
                 closed_set.add(neighbor_coord)
                 continue
 
@@ -137,7 +155,7 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
             pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
             pygame.display.flip()
                    
-
+    print("No se encontro camino")
     return None
 
 # Ejemplo de uso:

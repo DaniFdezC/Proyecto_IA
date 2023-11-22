@@ -7,6 +7,8 @@ class TipoCasilla(Enum):
     OBJETIVO = 3
     NIEBLA = 4
     ROBOT = 5
+    VICTIMA = 6
+    RESCATADO = 7
 
 class TipoObjetivo(Enum):
     NADA = 0,
