@@ -42,7 +42,7 @@ class Robot:
 
     def moverse(self):
         if self.quieto:
-            #self.comunicar()
+            self.comunicar()
             return
         
         if self.siguiendoAEstrella:
@@ -86,7 +86,6 @@ class Robot:
             self.nearest_fog.extend(self.fog_buffer)
             self.fog_buffer = []
             # Sort nearest fog by distance
-            self.nearest_fog.sort(key=lambda x: abs(x[0] - self.coordenadas[0]) + abs(x[1] - self.coordenadas[1]))
             self.siguiendoAEstrella = True
             self.seguirRuta()
             
@@ -171,10 +170,14 @@ class Robot:
                     if distance <= min_distance+1:
                         min_distance = distance
                         nearest_fog.append((i, j))
-        if len(nearest_fog) > 10:
+                        
+        nearest_fog.sort(key=lambda x: abs(x[0] - self.coordenadas[0]) + abs(x[1] - self.coordenadas[1]))
+        if len(nearest_fog) > 30:
             print("Cuting down")
             # Filter nearest fog +1 higher tham min_distance
-            nearest_fog = list(filter(lambda x: abs(x[0] - robot_x) + abs(x[1] - robot_y) <= min_distance, nearest_fog))
+            # nearest_fog = list(filter(lambda x: abs(x[0] - robot_x) + abs(x[1] - robot_y) <= min_distance + 2, nearest_fog))
+            # Use only the first half of the list
+            nearest_fog = nearest_fog[:len(nearest_fog)//2]
         return nearest_fog
     
     # def Wide_Check(self, robot_x, robot_y, nearest_fog, min_distance, scale):
@@ -189,10 +192,11 @@ class Robot:
         
     def seguirRuta(self):
         self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
+        self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
         self.coordenadas = self.rutaAEstrella.pop(0)
         self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.ROBOT
         self.quitar_niebla()
-       # self.comunicar()
+        self.comunicar()
         if len(self.rutaAEstrella) == 0:
             self.siguiendoAEstrella = False
             
@@ -202,35 +206,33 @@ class Robot:
         # Comunicar con los robots cercanos en el radio de comunicacion
         for i in range(max(0, robot_x - self.COMUNICATION_RADIUS), min(self.alto, robot_x + self.COMUNICATION_RADIUS + 1)):
             for j in range(max(0, robot_y - self.COMUNICATION_RADIUS), min(self.ancho, robot_y + self.COMUNICATION_RADIUS + 1)):
-                distance = np.sqrt((i - robot_x) ** 2 + (j - robot_y) ** 2)
-                if distance <= self.COMUNICATION_RADIUS:
+                #if distance <= self.COMUNICATION_RADIUS:
+                if self.mapaGlobal[i][j].tipo == TipoCasilla.ROBOT and (i, j) != self.coordenadas:
                     # Agregar a vecinos
                     vecinos.append((i, j))
         # Compartir mapa local
-        self.compartir_con(vecinos)
+        if len(vecinos) > 1:
+                #print("Vecinos: ",vecinos)
+                self.compartir_con(vecinos)
                     
 # from main import compartir_con
     def compartir_con(self, vecinos):
         print("Compartiendo mapa con ", vecinos)
         mapa_compartido = self.mapa_vacio(self.alto, self.ancho)
 
-        robots_vecinos = map(lambda vecino: self.buscar_robot_por_coordenadas(vecino, self.robots).mapaLocal, vecinos)
-
+        robots_vecinos = [self.buscar_robots_vecinos(vecino, self.robots) for vecino in vecinos]
+        
         for i in range(self.alto):
             for j in range(self.ancho):
-                tiene_diferente_a_niebla = False
                 for robot in robots_vecinos:
                     if robot.mapaLocal[i][j].tipo != TipoCasilla.NIEBLA:
-                        tiene_diferente_a_niebla = True
+                        mapa_compartido[i][j].tipo = self.mapaGlobal[i][j].tipo
                         break
 
-                if tiene_diferente_a_niebla:
-                    mapa_compartido[i][j].tipo = self.matriz_resultante[i][j].tipo
+        for robot in robots_vecinos:
+            robot.mapaLocal = copy.deepcopy(mapa_compartido)
 
-        for vecino in vecinos:
-            vecino.mapaLocal = copy.deepcopy(mapa_compartido)
-
-    def buscar_robot_por_coordenadas(self, coordenadas, robots):
+    def buscar_robots_vecinos(self, coordenadas, robots):
         for robot in robots:
             if robot.coordenadas == coordenadas:
                 return robot
