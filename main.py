@@ -1,3 +1,4 @@
+import math
 import sys
 import time
 
@@ -24,7 +25,6 @@ GREY = (105, 105, 105)
 
 ruta_imagen = "./Imagenes/mapaDefinitivo.png"
 mapaGlobal = convertirImagenAMatriz(ruta_imagen)
-mapaGlobal[3][98].tipoObjetivo = TipoObjetivo.LIBRE
 
 filas = len(mapaGlobal)
 columnas = len(mapaGlobal[0])
@@ -34,7 +34,16 @@ tamano_casilla = 5
 pantalla = pygame.display.set_mode((columnas*tamano_casilla, filas*tamano_casilla))
 pygame.display.set_caption("Matriz de Casillas")
 
-campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
+radioVision = []
+for i in range(-20, 20):
+    for j in range(-20, 20, 1):
+        # Evita agregar el punto (0, 0) a la lista de direcciones
+        if (i, j) != (0, 0):
+            # Calcula la distancia desde el punto central (0, 0) hasta el punto actual (i, j)
+            distance = math.sqrt(i ** 2 + j ** 2)
+            # Si la distancia es menor o igual al radio
+            if distance < 20:
+                radioVision.append((i, j))
 campoVisionParaVerOtroRobot = 10
 
 # robot1 = Robot(matriz_resultante, (27, 27), campoVision, niebla)
@@ -46,20 +55,32 @@ campoVisionParaVerOtroRobot = 10
 # robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
 # robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
 
-robot1 = Robot(mapaGlobal, (27, 27), campoVision)
-robot2 = Robot(mapaGlobal, (92, 7), campoVision)
-robot3 = Robot(mapaGlobal, (147, 9), campoVision)
-robot4 = Robot(mapaGlobal, (96, 43), campoVision)
-robot5 = Robot(mapaGlobal, (98, 43), campoVision)
-robot6 = Robot(mapaGlobal, (27, 78), campoVision)
-robot7 = Robot(mapaGlobal, (94, 67), campoVision)
-robot8 = Robot(mapaGlobal, (86, 97), campoVision)
+robot1 = Robot(mapaGlobal, (27, 27), radioVision)
+robot2 = Robot(mapaGlobal, (92, 7), radioVision)
+robot3 = Robot(mapaGlobal, (147, 9), radioVision)
+robot4 = Robot(mapaGlobal, (96, 43), radioVision)
+robot5 = Robot(mapaGlobal, (98, 43), radioVision)
+robot6 = Robot(mapaGlobal, (27, 78), radioVision)
+robot7 = Robot(mapaGlobal, (94, 67), radioVision)
+robot8 = Robot(mapaGlobal, (86, 97), radioVision)
+
+mapaGlobal[1][92].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[21][16].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[1][58].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[6][108].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[29][94].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[55][55].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[66][97].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[79][131].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[83][61].tipoObjetivo = TipoObjetivo.LIBRE
+mapaGlobal[85][1].tipoObjetivo = TipoObjetivo.LIBRE
 
 robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
-# robots = [robot1]
+# robots = [robot8]
 iteraciones = 0
 robotsAcabados = 0
 nTotalRobots = len(robots)
+contadorObjetivos = 0
 
 while True:
     for robot in robots:
@@ -87,6 +108,7 @@ while True:
                     color = BLACK
                 elif (x, y) == robot.coordenadas and mapaGlobal[y][x].tipoObjetivo is TipoObjetivo.LIBRE:
                     mapaGlobal[y][x].tipoObjetivo = TipoObjetivo.CAPTURADO
+                    contadorObjetivos +=1
                     color = BLUE
                 elif (x, y) == robot.coordenadas:
                     color = BLUE
@@ -96,7 +118,7 @@ while True:
                     color = GREY
                 elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
                     color=GREEN
-                elif casilla.tipo is TipoCasilla.VISITADO:
+                elif casilla.tipo is TipoCasilla.VISITADO or casilla.tipo is TipoCasilla.VISIONADA:
                     color = YELLOW
                 else:
                     color = WHITE
@@ -108,6 +130,10 @@ while True:
         # time.sleep(0.1)
     iteraciones += 1
     print(iteraciones)
+
+    if contadorObjetivos == 10:
+        print("Se han encontrado todos los objetivos")
+        break
 
     robotsIntercambiadoMapas: Set[Tuple[Robot, Robot]] = set()
 
