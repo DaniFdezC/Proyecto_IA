@@ -85,7 +85,7 @@ class Main:
 
                     pygame.draw.rect(self.pantalla, color, (j * self.tamano_casilla, i * self.tamano_casilla, self.tamano_casilla, self.tamano_casilla))
 
-                pygame.display.flip()
+            pygame.display.flip()
             self.iteraciones += 1
             print(self.iteraciones)
 
