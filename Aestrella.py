@@ -34,7 +34,9 @@ def astar(start: Tuple[int, int], end: Tuple[int, int], mapaLocal: List[List[Cas
             while nodoActual:
                 path.append(nodoActual.coord)
                 nodoActual = nodoActual.parent
-            return path[::-1]
+            path = path[::-1]
+            del path[0]
+            return path
 
         closedSet.add(nodoActual.coord)
 
@@ -71,10 +73,10 @@ def astar(start: Tuple[int, int], end: Tuple[int, int], mapaLocal: List[List[Cas
             for node in openList:
                 if node.coord == coordenadaVecina and node.g <= nuevaG:
                     break
-            else:
+            else: # El else se ejecutara si no se ha ejectado el break del if de arriba
                 heapq.heappush(openList, Node(coordenadas=coordenadaVecina, g=nuevaG, h=nuevaH, parent=nodoActual))
 
-    return False
+    return None
 
 # # Ejemplo de uso:
 # start_coord = (0, 0)
