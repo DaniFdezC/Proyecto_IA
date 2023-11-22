@@ -59,6 +59,7 @@ def astar(start: Tuple[int, int], end: Tuple[int, int], mapaLocal: List[List[Cas
             if (
                     coordenadaVecinaX < 0 or coordenadaVecinaX >= maxX or
                     coordenadaVecinaY < 0 or coordenadaVecinaY >= maxY or
+                    mapaLocal[coordenadaVecinaY][coordenadaVecinaX].tipo is TipoCasilla.NADA or
                     mapaLocal[coordenadaVecinaY][coordenadaVecinaX].tipo is TipoCasilla.PARED or
                     coordenadaVecina in closedSet
             ):
@@ -73,7 +74,7 @@ def astar(start: Tuple[int, int], end: Tuple[int, int], mapaLocal: List[List[Cas
             else:
                 heapq.heappush(openList, Node(coordenadas=coordenadaVecina, g=nuevaG, h=nuevaH, parent=nodoActual))
 
-    return None
+    return False
 
 # # Ejemplo de uso:
 # start_coord = (0, 0)

@@ -25,17 +25,20 @@ class Robot:
 
         self.siguiendoAEstrella = False
         self.rutaAEstrella = None
-        self.indiceRuta = 1
+        self.indiceRuta = 0
+
+        self.objetivos = []
+        self.objetivoMarcado = None
+        self.rutaAlObjetivo = False
 
     def moverse(self):
-        if self.siguiendoAEstrella:
-            self.coordenadas = self.rutaAEstrella[self.indiceRuta]
-            self._marcarVisitadas(self.coordenadas)
-            self.indiceRuta += 1
 
-            if len(self.rutaAEstrella) >= self.indiceRuta:
-                self.siguiendoAEstrella = False
-                self.indiceRuta = 1
+        if self.objetivoMarcado == self.coordenadas:
+            # print("Dejo de seguir al objetivo")
+            self.objetivoMarcado = None
+            self.siguiendoAEstrella = False
+
+        self.comprobarSiPuedoIrAObjetivo()
 
         if self.siguiendoAEstrella is False:
             seguir = True
@@ -51,24 +54,90 @@ class Robot:
                 if self._puedoExplorarAlgunaCasilla(vecinos) or self._puedoExplorarCasilla((columanXActual, filaYActual)):
                     seguir = False
 
+                    self.comprobarSiPuedoIrAObjetivo()
+
                     if self._mePuedoMoverSinDarSaltos(columanXActual, filaYActual):
                         self.coordenadas = (columanXActual, filaYActual)
                         self._marcarVisitadas(self.coordenadas)
+
+                        radioVision = self.radioVision((filaYActual, columanXActual))
+
+                        for filaVision, columnaVision in radioVision:
+
+                            if self._puedoExplorarCasilla((columnaVision, filaVision)):
+                                self.mapaLocal[filaVision][columnaVision].tipo = TipoCasilla.VISIONADA
+                                self.mapaGlobal[filaVision][columnaVision].tipo = TipoCasilla.VISIONADA
+                                if self.mapaGlobal[filaVision][columnaVision].tipoObjetivo == TipoObjetivo.LIBRE:
+                                    if (filaVision, columnaVision) not in self.objetivos and (
+                                            filaVision, columnaVision) != self.objetivoMarcado:
+                                        self.objetivos.append((filaVision, columnaVision))
+
+                        for columnaXVecina, filaYVecina in vecinos:
+                            coordenadaVecina = (columnaXVecina, filaYVecina)
+
+                            if self._puedoExplorarCasilla(
+                                    coordenadaVecina) and coordenadaVecina not in self.colaBFS:
+
+                                self.colaBFS.append(coordenadaVecina)
+                                if self._esVecino(coordenadaVecina):
+                                    self.mapaLocal[filaYVecina][columnaXVecina].tipo = TipoCasilla.VISITADO
+                                    self.mapaGlobal[filaYVecina][columnaXVecina].tipo = TipoCasilla.VISITADO
+
                     else:
                         self.rutaAEstrella = astar(self.coordenadas, (columanXActual, filaYActual), self.mapaGlobal)
                         self.siguiendoAEstrella = True
 
-                    for columnaXVecina, filaYVecina in vecinos:
-                        coordenadaVecina = (columnaXVecina, filaYVecina)
+        if self.siguiendoAEstrella:
+            self.coordenadas = self.rutaAEstrella[self.indiceRuta]
+            self._marcarVisitadas(self.coordenadas)
+            self.indiceRuta += 1
 
-                        if self._puedoExplorarCasilla(coordenadaVecina) and coordenadaVecina not in self.colaBFS:
-                            self.colaBFS.append(coordenadaVecina)
+            if self.indiceRuta >= len(self.rutaAEstrella):
+                self.siguiendoAEstrella = False
+                self.indiceRuta = 0
 
-                            if self._esVecino(coordenadaVecina):
-                                self._marcarVisitadas(coordenadaVecina)
+            columnaActual, filaActual = self.coordenadas
 
-            return True
+            radioVision = self.radioVision((filaActual, columnaActual))
 
+            for filaVision, columnaVision in radioVision:
+
+                if self._puedoExplorarCasilla((columnaVision, filaVision)):
+                    self.mapaLocal[filaVision][columnaVision].tipo = TipoCasilla.VISIONADA
+                    self.mapaGlobal[filaVision][columnaVision].tipo = TipoCasilla.VISIONADA
+                    if self.mapaGlobal[filaVision][columnaVision].tipoObjetivo == TipoObjetivo.LIBRE:
+                        if (filaVision, columnaVision) not in self.objetivos and (
+                                filaVision, columnaVision) != self.objetivoMarcado:
+                            self.objetivos.append((filaVision, columnaVision))
+
+            vecinos = self._getVecinos(columnaActual, filaActual)
+
+            for columnaXVecina, filaYVecina in vecinos:
+                coordenadaVecina = (columnaXVecina, filaYVecina)
+
+                if self._puedoExplorarCasilla(
+                        coordenadaVecina) and coordenadaVecina not in self.colaBFS:
+
+                    self.colaBFS.append(coordenadaVecina)
+                    if self._esVecino(coordenadaVecina):
+                        self.mapaLocal[filaYVecina][columnaXVecina].tipo = TipoCasilla.VISITADO
+                        self.mapaGlobal[filaYVecina][columnaXVecina].tipo = TipoCasilla.VISITADO
+
+        return True
+
+
+    def comprobarSiPuedoIrAObjetivo(self):
+        if len(self.objetivos) > 0 and self.objetivoMarcado is None:
+            for objetivo in self.objetivos:
+                filaObjetivo, columnaObjetivo = objetivo
+                self.rutaAlObjetivo = astar(self.coordenadas, (columnaObjetivo, filaObjetivo), self.mapaLocal)
+                if self.rutaAlObjetivo != False:
+                    # print("Empiezo a seguir al objetivo")
+                    self.rutaAEstrella = self.rutaAlObjetivo
+                    self.objetivoMarcado = (columnaObjetivo, filaObjetivo)
+                    self.siguiendoAEstrella = True
+                    self.objetivos.remove(objetivo)
+                    self.indiceRuta = 0
     def intercambiarMapa(self, otroRobot, darLaVueltaCola: bool):
         self._mezclarMapaLocales(otroRobot)
         self._borrarElementosPilaBFS(darLaVueltaCola)
@@ -101,7 +170,7 @@ class Robot:
         x, y = coordenadaCasilla
 
         noLoHeVisitado = self.mapaLocal[y][x].tipo is not TipoCasilla.VISITADO
-        noHayPared = self.mapaGlobal[y][x].tipo is TipoCasilla.NADA
+        noHayPared = self.mapaGlobal[y][x].tipo is not TipoCasilla.PARED
         dentroDeLosLimites = self._dentroDeLosLimites(x, y)
 
         return dentroDeLosLimites and noHayPared and noLoHeVisitado
@@ -129,11 +198,23 @@ class Robot:
                 (x, y + 1),
                 (x + 1, y),
                 (x, y - 1),
-                (x + 1, y + 1),
+                (x - 1, y - 1),
                 (x + 1, y - 1),
                 (x - 1, y + 1),
-                (x - 1, y - 1)]
+                (x + 1, y + 1)]
 
+
+    def radioVision(self, coordenadaVision):
+        campoVision = []
+
+        for fila, columna in self.campoVision:
+            new_row = coordenadaVision[0] + fila
+            new_col = coordenadaVision[1] + columna
+
+            if 0 <= new_row < self.alto and 0 <= new_col < self.ancho and self.mapaGlobal[new_row][new_col].tipo is not TipoCasilla.PARED:
+                campoVision.append((new_row, new_col))
+
+        return campoVision
 
     # def quitar_niebla(self):
     #     robot_x, robot_y = self.coordenadas
