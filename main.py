@@ -62,29 +62,28 @@ class Main:
                         pygame.quit()
                         sys.exit()
 
-                self.pantalla.fill((255, 255, 255))
 
-                for i, fila in enumerate(self.niebla):
-                    for j, casilla in enumerate(fila):
-                        if casilla.tipo is TipoCasilla.PARED:
-                            color = BLACK
-                        elif (i, j) == robot.coordenadas and self.matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
-                            self.matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
-                            color = BLUE
-                        elif (i, j) in map(lambda x: x.coordenadas, self.robots):
-                            color = BLUE
-                        elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
-                            color = RED
-                        elif casilla.tipo is TipoCasilla.NIEBLA:
-                            color = GREY
-                        elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
-                            color = GREEN
-                        elif casilla.tipo is TipoCasilla.VISITADO:
-                            color = YELLOW
-                        else:
-                            color = WHITE
+            for i, fila in enumerate(self.niebla):
+                for j, casilla in enumerate(fila):
+                    if casilla.tipo is TipoCasilla.PARED:
+                        color = BLACK
+                    elif (i, j) == robot.coordenadas and self.matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
+                        self.matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
+                        color = BLUE
+                    elif (i, j) in map(lambda x: x.coordenadas, self.robots):
+                        color = BLUE
+                    elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
+                        color = RED
+                    elif casilla.tipo is TipoCasilla.NIEBLA:
+                        color = GREY
+                    elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
+                        color = GREEN
+                    elif casilla.tipo is TipoCasilla.VISITADO:
+                        color = YELLOW
+                    else:
+                        color = WHITE
 
-                        pygame.draw.rect(self.pantalla, color, (j * self.tamano_casilla, i * self.tamano_casilla, self.tamano_casilla, self.tamano_casilla))
+                    pygame.draw.rect(self.pantalla, color, (j * self.tamano_casilla, i * self.tamano_casilla, self.tamano_casilla, self.tamano_casilla))
 
                 pygame.display.flip()
             self.iteraciones += 1
