@@ -144,8 +144,8 @@ class Robot:
                 self.rutaAEstrella = [self.coordenadas]
                 break
             # Pintar punto de niebla mas cercano de color
-            self.pygame.draw.rect(self.pantalla, (0, 255, 255), (niebla_mas_cercana[1] * 5, niebla_mas_cercana[0] * 5, 5, 5))
-            self.pygame.display.flip()
+            # self.pygame.draw.rect(self.pantalla, (0, 255, 255), (niebla_mas_cercana[1] * 5, niebla_mas_cercana[0] * 5, 5, 5))
+            # self.pygame.display.flip()
             self.rutaAEstrella = astar(self.coordenadas, niebla_mas_cercana, self.mapaLocal, self.pygame, self.pantalla, "explorar")
             if self.rutaAEstrella != None:
                 self.siguiendoAEstrella = True
@@ -157,7 +157,8 @@ class Robot:
     def seguirRuta(self):
         self.comprobar_rescate()
         self.coordenadas = self.rutaAEstrella.pop(0)
-        self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.ROBOT
+        if (self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo not in [TipoCasilla.RESCATADO, TipoCasilla.VICTIMA]):
+            self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.ROBOT
         self.quitar_niebla()
         self.comunicar()
         if len(self.rutaAEstrella) == 0:
@@ -173,11 +174,12 @@ class Robot:
         elif self.coordenadas in self.objetivos_rescatados:
             self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
             self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
-        elif self.rutaAEstrella[-1] in self.objetivos_rescatados:
-            self.rutaAEstrella = [self.coordenadas] # Evitar que busque un punto ya rescatado
         else:
             self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
             self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
+        # Evitar que busque un punto ya rescatado
+        if self.rutaAEstrella[-1] in self.objetivos_rescatados:
+            self.rutaAEstrella = [self.coordenadas] 
             
     def comunicar(self):
         robot_x, robot_y = self.coordenadas
