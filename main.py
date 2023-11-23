@@ -34,7 +34,7 @@ class Main:
         self.pantalla = pygame.display.set_mode((self.columnas*self.tamano_casilla, self.filas*self.tamano_casilla))
         pygame.display.set_caption("Matriz de Casillas")
 
-        self.campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
+        self.campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, 0), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
         self.robots = list()
 
         self.robot1 = Robot(self.matriz_resultante, (27, 27), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
@@ -65,12 +65,14 @@ class Main:
 
             for i, fila in enumerate(self.niebla):
                 for j, casilla in enumerate(fila):
-                    if casilla.tipo is TipoCasilla.PARED:
+
+                    allNeighbours = map(lambda neighbour: map(lambda robotNeighbour: (robotNeighbour[0]+neighbour[0], robotNeighbour[1]+robotNeighbour[1]), map(lambda x: x.coordenadas,self.robots)) , self.campoVision)
+                    if (i, j) in allNeighbours:
+                        color = BLUE
+                    elif casilla.tipo is TipoCasilla.PARED:
                         color = BLACK
                     elif (i, j) == robot.coordenadas and self.matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
                         self.matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
-                        color = BLUE
-                    elif (i, j) in map(lambda x: x.coordenadas, self.robots):
                         color = BLUE
                     elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
                         color = RED
@@ -85,7 +87,15 @@ class Main:
 
                     pygame.draw.rect(self.pantalla, color, (j * self.tamano_casilla, i * self.tamano_casilla, self.tamano_casilla, self.tamano_casilla))
 
-            pygame.display.flip()
+            for robot in self.robots:
+                for y in range(-1, 2):
+                    for x in range(-1, 2):
+                        pygame.draw.rect(self.pantalla, BLUE, (x+(robot.coordenadas[1]*self.tamano_casilla), y+(robot.coordenadas[0]*self.tamano_casilla), self.tamano_casilla, self.tamano_casilla))
+
+
+
+
+                pygame.display.flip()
             self.iteraciones += 1
             print(self.iteraciones)
 
