@@ -1,7 +1,7 @@
 import sys
 import copy
 import pygame
-from CreadorMapa import convertirImagenAMatriz
+from CreadorMapa import convertir_imagen_a_matriz
 from Casilla import *
 from Robot import Robot
 
@@ -20,21 +20,19 @@ class Main:
     pass
     def __init__(self):
         self.ruta_imagen = "./Imagenes/mapaDefinitivoConVictimas.png"
-        #self.ruta_imagen = "./Imagenes/mapaDefinitivo.png"
-        self.matriz_resultante = convertirImagenAMatriz(self.ruta_imagen)
-        self.matriz_resultante[3][98].tipoObjetivo = TipoObjetivo.LIBRE
+        self.matriz_resultante = convertir_imagen_a_matriz(self.ruta_imagen)
 
         self.filas = len(self.matriz_resultante)
         self.columnas = len(self.matriz_resultante[0])
 
         self.tamano_casilla = 5
         self.iteraciones = 0
-        self.rescatados = [0]
+        self.rescatados = set()
 
         self.niebla = self.mapa_vacio(self.filas, self.columnas)
 
         self.pantalla = pygame.display.set_mode((self.columnas*self.tamano_casilla, self.filas*self.tamano_casilla))
-        pygame.display.set_caption(f"Mision De Rescate -- {self.rescatados[0]}/10 Rescatados")
+        pygame.display.set_caption(f"Mision De Rescate -- {len(self.rescatados)}/10 Rescatados")
 
         self.campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
         self.robots = list()
@@ -56,44 +54,44 @@ class Main:
         return [[Casilla(TipoCasilla.NIEBLA) for _ in range(columnas)] for _ in range(filas)]
 
     def run(self):
-        while self.rescatados[0] < 10:
-            for robot in self.robots:
-                robot.moverse()
-                for evento in pygame.event.get():
-                    if evento.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit()
+        while True:
+            if len(self.rescatados) < 10:
+                for robot in self.robots:
+                    robot.moverse()
+                    for evento in pygame.event.get():
+                        if evento.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit()
+                    
+                    #robots_vecinos = map(lambda x: x.coordenadas,self.robots)
+                    #allNeighbours = map(lambda neighbour: map(lambda robotNeighbour: (robotNeighbour[0]+neighbour[0], robotNeighbour[1]+robotNeighbour[1]), robots_vecinos) , self.campoVision)
+                    #print(len(allNeighbours))
+                    for i, fila in enumerate(self.niebla):
+                        for j, casilla in enumerate(fila):
+                            
+                            # if (i, j) in allNeighbours:
+                            #     color = BLUE
+                            if casilla.tipo is TipoCasilla.PARED:
+                                color = BLACK
+                            elif robot.rutaAEstrella is not None and (i, j) in robot.rutaAEstrella:
+                                color = GREEN
+                            elif (i, j) in map(lambda x: x.coordenadas, self.robots):
+                                color = BLUE
+                            elif casilla.tipo is TipoCasilla.NIEBLA:
+                                color = GREY
+                            elif casilla.tipo is TipoCasilla.VICTIMA:
+                                color = RED                        
+                            elif casilla.tipo is TipoCasilla.RESCATADO:
+                                color = GREEN
+                            else:
+                                color = WHITE
 
-                for i, fila in enumerate(self.niebla):
-                    for j, casilla in enumerate(fila):
-                        if casilla.tipo is TipoCasilla.PARED:
-                            color = BLACK
-                        elif (i, j) == robot.coordenadas and self.matriz_resultante[i][j].tipoObjetivo is TipoObjetivo.LIBRE:
-                            self.matriz_resultante[i][j].tipoObjetivo = TipoObjetivo.CAPTURADO
-                            color = BLUE
-                        elif (i, j) in map(lambda x: x.coordenadas, self.robots):
-                            color = BLUE
-                        elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
-                            color = RED
-                        elif casilla.tipo is TipoCasilla.NIEBLA:
-                            color = GREY
-                        elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
-                            color = GREEN
-                        elif casilla.tipo is TipoCasilla.VISITADO:
-                            color = YELLOW 
-                        elif casilla.tipo is TipoCasilla.VICTIMA:
-                            color = RED                        
-                        elif casilla.tipo is TipoCasilla.RESCATADO:
-                            color = GREEN
-                        else:
-                            color = WHITE
-
-                        pygame.draw.rect(self.pantalla, color, (j * self.tamano_casilla, i * self.tamano_casilla, self.tamano_casilla, self.tamano_casilla))
-
-                pygame.display.flip()
-            pygame.display.set_caption(f"Mision De Rescate -- {self.rescatados[0]}/10 Rescatados -- Iteracion {self.iteraciones}")
-            self.iteraciones += 1
-            print(self.iteraciones)
+                            pygame.draw.rect(self.pantalla, color, (j * self.tamano_casilla, i * self.tamano_casilla, self.tamano_casilla, self.tamano_casilla))
+                    pygame.display.flip()
+                pygame.display.set_caption(f"Mision De Rescate -- {len(self.rescatados)}/10 Rescatados -- Iteracion {self.iteraciones}")
+                self.iteraciones += 1
+                print(self.iteraciones)
+                
 
 if __name__ == "__main__":
     main = Main()

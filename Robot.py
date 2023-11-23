@@ -2,9 +2,6 @@ from enum import Enum
 import copy
 import random
 from Casilla import *
-from Algoritmo import *
-from collections import deque
-import numpy as np
 from Aestrella import *
 class Robot:
     pass
@@ -63,7 +60,6 @@ class Robot:
                     self.objetivos_ignorados.add(objetivo)
                 else:
                     self.siguiendoAEstrella = True
-                    self.pintarRuta()
                     break
         else:
             self.explorar_niebla()
@@ -72,10 +68,10 @@ class Robot:
             self.seguirRuta()
         return True
 
-    def pintarRuta(self):
-        for (x, y) in self.rutaAEstrella:
-            self.pygame.draw.rect(self.pantalla, (0, 255, 0), (y * 5, x * 5, 5, 5))
-            self.pygame.display.flip()
+    # def pintar_ruta(self):
+    #     for (x, y) in self.rutaAEstrella:
+    #         self.pygame.draw.rect(self.pantalla, (0, 255, 0), (y * 5, x * 5, 5, 5))
+    #         self.pygame.display.flip()
 
     def quitar_niebla(self):
         robot_x, robot_y = self.coordenadas
@@ -85,9 +81,19 @@ class Robot:
             for j in range(max(0, robot_y - self.VIEWPORT_RADIUS), min(self.ancho, robot_y + self.VIEWPORT_RADIUS + 1)):
                 distance = (i - robot_x) ** 2 + (j - robot_y) ** 2
                 if distance <= self.VIEWPORT_RADIUS_POW_2:
+                    #
+                    if self.mapaLocal[i][j].tipo in [TipoCasilla.PARED, TipoCasilla.RESCATADO]:
+                        continue
+                    # 
                     self.niebla[i][j].tipo = self.mapaGlobal[i][j].tipo
                     self.mapaLocal[i][j].tipo = self.mapaGlobal[i][j].tipo
-                    if (self.mapaGlobal[i][j].tipo == TipoCasilla.VICTIMA and (i, j) not in self.objetivos_conocidos):
+                    if (self.mapaGlobal[i][j].tipo == TipoCasilla.RESCATADO and (i, j) not in self.objetivos_rescatados):
+                        if (i, j) in self.objetivos_conocidos:
+                            self.objetivos_conocidos.remove((i, j))
+                        self.objetivos_rescatados.add((i, j))
+                        self.rescatados_totales.add((i, j))
+                        continue
+                    elif (self.mapaGlobal[i][j].tipo == TipoCasilla.VICTIMA and (i, j) not in self.objetivos_conocidos):
                         self.objetivos_conocidos.add((i, j))
                         print("Victima encontrada en ", (i, j), self.objetivos_conocidos)
                         continue
@@ -129,20 +135,21 @@ class Robot:
             if not self.nearest_fog:
                 self.quieto = True
                 return
-            niebla_mas_cercana = self.nearest_fog.pop(random.randint(0, len(self.nearest_fog)-1))
+            #niebla_mas_cercana = self.nearest_fog.pop(random.randint(0, len(self.nearest_fog)-1))
+            niebla_mas_cercana = self.nearest_fog.pop(-1)
             self.fog_buffer.append(niebla_mas_cercana)
             if (self.coordenadas in self.nearest_fog):
                 self.nearest_fog = []
                 self.fog_buffer = []
                 self.rutaAEstrella = [self.coordenadas]
                 break
-            # Pintar punto de niebla mas cercano de verde
-            # self.pygame.draw.rect(self.pantalla, (0, 255, 0), (niebla_mas_cercana[1] * 5, niebla_mas_cercana[0] * 5, 5, 5))
-            # self.pygame.display.flip()
+            # Pintar punto de niebla mas cercano de color
+            self.pygame.draw.rect(self.pantalla, (0, 255, 255), (niebla_mas_cercana[1] * 5, niebla_mas_cercana[0] * 5, 5, 5))
+            self.pygame.display.flip()
             self.rutaAEstrella = astar(self.coordenadas, niebla_mas_cercana, self.mapaLocal, self.pygame, self.pantalla, "explorar")
             if self.rutaAEstrella != None:
                 self.siguiendoAEstrella = True
-                break
+                break                
         self.nearest_fog.extend(self.fog_buffer)
         self.fog_buffer = []
 
@@ -160,12 +167,14 @@ class Robot:
         if self.coordenadas in self.objetivos_conocidos:
             self.objetivos_conocidos.remove(self.coordenadas)
             self.objetivos_rescatados.add(self.coordenadas)
-            self.rescatados_totales[0] += 1
+            self.rescatados_totales.add(self.coordenadas)
             self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
             self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
         elif self.coordenadas in self.objetivos_rescatados:
             self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
             self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
+        elif self.rutaAEstrella[-1] in self.objetivos_rescatados:
+            self.rutaAEstrella = [self.coordenadas] # Evitar que busque un punto ya rescatado
         else:
             self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
             self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA

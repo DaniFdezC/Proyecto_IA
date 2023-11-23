@@ -1,13 +1,13 @@
 #import heapq
 import math
-
-
 from Casilla import *
 
+# Usada para calcular el coste h
 def distance(coord1, coord2):
     # Función para calcular la distancia entre dos coordenadas (euclidiana)
     return ((coord1[0] - coord2[0])**2 + (coord1[1] - coord2[1])**2)
 
+# Usada para calcular valores 1 y 1.4... para el coste g
 def hypot(coord1, coord2):
     return math.hypot(coord1[0] - coord2[0], coord1[1] - coord2[1])
 
@@ -22,7 +22,7 @@ class Node:
     def __lt__(self, other):
         return (self.g + self.h) < (other.g + other.h)
 
-def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
+def astar(start, end, obstacles_map, pygame, pantalla, type = "explorar"):
     alto = len(obstacles_map)
     ancho = len(obstacles_map[0])
     steps = 0
@@ -30,12 +30,10 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
     closed_set = set()
 
     start_node = Node(start)
-    end_node = Node(end)
 
     start_node.g = 0
     start_node.h = distance(start, end)
 
-    # heapq.heappush(open_list, start_node)
     open_list.append(start_node)
 
     while open_list:
@@ -56,10 +54,9 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
                 print("Camino Hacia Victima ", path)
             return path[::-1]
 
-
         x, y = current_node.coord
-        # pygame.draw.rect(pantalla, (255, 0, 0), (y * 5, x * 5, 5, 5))
-        # pygame.display.flip()
+        pygame.draw.rect(pantalla, (255, 0, 0), (y * 5, x * 5, 5, 5))
+        pygame.display.flip()
         neighbors = [
             (x - 1, y - 1),
             (x, y - 1),
@@ -87,18 +84,18 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
             if ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo == TipoCasilla.NIEBLA) and (type == "explorar")):
                print("TOQUE NIEBLA! ", neighbor_coord, type)
                end = neighbor_coord
-               process_neighbor(neighbor_coord, current_node, end, type, open_list, pantalla, pygame)
+               process_neighbor(neighbor_coord, current_node, end, open_list, pantalla, pygame)
                break
-            elif ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != TipoCasilla.NADA) and (neighbor_coord != end)):
+            elif ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo not in [TipoCasilla.NADA, TipoCasilla.RESCATADO, TipoCasilla.VICTIMA, TipoCasilla.ROBOT]) and (neighbor_coord != end)):
                 closed_set.add(neighbor_coord)
                 continue
             
-            process_neighbor(neighbor_coord, current_node, end, type, open_list, pantalla, pygame)
+            process_neighbor(neighbor_coord, current_node, end, open_list, pantalla, pygame)
                    
     print("No se encontro camino")
     return None
 
-def process_neighbor(neighbor_coord, current_node, end, type, open_list, pantalla, pygame):
+def process_neighbor(neighbor_coord, current_node, end, open_list, pantalla, pygame):
         neighbor = Node(neighbor_coord)
         neighbor.parent = current_node
 
@@ -117,8 +114,8 @@ def process_neighbor(neighbor_coord, current_node, end, type, open_list, pantall
         if exists:
             return
         open_list.append(neighbor)
-        # pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
-        # pygame.display.flip()
+        pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
+        pygame.display.flip()
 
 # Ejemplo de uso:
 # start_coord = (0, 0)
