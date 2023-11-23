@@ -63,9 +63,7 @@ class Main:
                         pygame.quit()
                         sys.exit()
 
-                self.pantalla.fill((255, 255, 255))
-
-                for i, fila in enumerate(robot.mapaLocal):
+                for i, fila in enumerate(self.niebla):
                     for j, casilla in enumerate(fila):
                         if casilla.tipo is TipoCasilla.PARED:
                             color = BLACK

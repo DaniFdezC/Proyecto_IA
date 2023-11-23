@@ -15,6 +15,7 @@ class Robot:
     def __init__(self, mapaGlobal, coordenadas, campoVision, niebla,pantalla , pygame, robots):
         self.robots = robots
         self.objetivos = []
+        self.objetivos_rescatados = []
         self.objetivos_ignorados = []
         
         self.mapaGlobal = mapaGlobal
@@ -27,11 +28,9 @@ class Robot:
         self.alto = len(mapaGlobal)
         self.ancho = len(mapaGlobal[0])
 
-        #self.mapaLocal =[[Casilla() for _ in range(self.ancho)] for _ in range(self.alto)]
         self.mapaLocal = copy.deepcopy(niebla)
         self.nearest_fog = []
         self.fog_buffer = []
-        self.bfsQueue = deque([coordenadas])
         self.siguiendoAEstrella = False
         self.rutaAEstrella = None
         self.quieto = False
@@ -45,9 +44,9 @@ class Robot:
 
         self.find_nearest_fog()
         #Pintar puntos cercanos de amarillo
-        for (x, y) in self.nearest_fog:
-            self.pygame.draw.rect(self.pantalla, (225, 255, 0), (y * 5, x * 5, 5, 5))
-            self.pygame.display.flip()
+        # for (x, y) in self.nearest_fog:
+        #     self.pygame.draw.rect(self.pantalla, (225, 255, 0), (y * 5, x * 5, 5, 5))
+        #     self.pygame.display.flip()
             
         if self.siguiendoAEstrella:
             self.seguirRuta()
@@ -112,8 +111,8 @@ class Robot:
                         
         nearest_fog.sort(key=lambda x: abs(x[0] - self.coordenadas[0]) + abs(x[1] - self.coordenadas[1]))
         if len(nearest_fog) > 30:
-            print("Cuting down")
-            nearest_fog = nearest_fog[:len(nearest_fog)//4]
+            #print("Cuting down")
+            nearest_fog = nearest_fog[:len(nearest_fog)//5]
         return nearest_fog
        
     def explorar_niebla(self):
@@ -141,19 +140,26 @@ class Robot:
 
         
     def seguirRuta(self):
-        if self.coordenadas in self.objetivos:
-            self.objetivos.remove(self.coordenadas)
-            self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
-            self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
-        else:
-            self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
-            self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
+        self.comprobar_rescate()
         self.coordenadas = self.rutaAEstrella.pop(0)
         self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.ROBOT
         self.quitar_niebla()
         self.comunicar()
         if len(self.rutaAEstrella) == 0:
             self.siguiendoAEstrella = False
+
+    def comprobar_rescate(self):
+        if self.coordenadas in self.objetivos:
+            self.objetivos.remove(self.coordenadas)
+            self.objetivos_rescatados.append(self.coordenadas)
+            self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
+            self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
+        elif self.coordenadas in self.objetivos_rescatados:
+            self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
+            self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.RESCATADO
+        else:
+            self.mapaGlobal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
+            self.mapaLocal[self.coordenadas[0]][self.coordenadas[1]].tipo = TipoCasilla.NADA
             
     def comunicar(self):
         robot_x, robot_y = self.coordenadas

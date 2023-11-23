@@ -58,8 +58,8 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
 
 
         x, y = current_node.coord
-        pygame.draw.rect(pantalla, (255, 0, 0), (y * 5, x * 5, 5, 5))
-        pygame.display.flip()
+        # pygame.draw.rect(pantalla, (255, 0, 0), (y * 5, x * 5, 5, 5))
+        # pygame.display.flip()
         neighbors = [
             (x - 1, y - 1),
             (x, y - 1),
@@ -77,7 +77,6 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
                 print("No se encontro camino")
                 return None
             
-            
             if (
                 neighbor_coord[0] < 0 or neighbor_coord[0] >= alto or
                 neighbor_coord[1] < 0 or neighbor_coord[1] >= ancho or
@@ -85,9 +84,6 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
             ):
                 continue
             
-            #print("A* --> ", neighbor_coord,  obstacles_map[neighbor_coord[1]][neighbor_coord[0]].tipo, obstacles_map[neighbor_coord[1]][neighbor_coord[0]].tipo != TipoCasilla.NADA)
-           #print("Current neighbor", neighbor_coord, obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo )
-            #print("Closed Set", closed_set)
             if ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo == TipoCasilla.NIEBLA) and (type == "explorar")):
                print("TOQUE NIEBLA! ", neighbor_coord, type)
                end = neighbor_coord
@@ -106,12 +102,6 @@ def process_neighbor(neighbor_coord, current_node, end, type, open_list, pantall
         neighbor = Node(neighbor_coord)
         neighbor.parent = current_node
 
-        if type == "dfs":
-            open_list.append(neighbor)
-            pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
-            pygame.display.flip()
-            return
-
         # Create the f, g, and h values
         neighbor.g = current_node.g + hypot(current_node.coord, neighbor.coord)
         neighbor.h = distance(neighbor.coord, end)
@@ -127,8 +117,8 @@ def process_neighbor(neighbor_coord, current_node, end, type, open_list, pantall
         if exists:
             return
         open_list.append(neighbor)
-        pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
-        pygame.display.flip()
+        # pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
+        # pygame.display.flip()
 
 # Ejemplo de uso:
 # start_coord = (0, 0)
