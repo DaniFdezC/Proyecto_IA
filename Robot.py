@@ -1,11 +1,7 @@
-from enum import Enum
 from Casilla import *
-from Algoritmo import *
 from collections import deque
-import numpy as np
 from Aestrella import *
 from typing import *
-from queue import Queue
 
 
 class Robot:
@@ -40,7 +36,6 @@ class Robot:
 
         if self.siguiendoAEstrella is False:
             seguir = True
-
             while seguir:
                 if not self.colaBFS:
                     return False
@@ -194,11 +189,3 @@ class Robot:
                 campoVision.append((newX, newY))
 
         return campoVision
-
-    # def quitar_niebla(self):
-    #     robot_x, robot_y = self.coordenadas
-    #     for i in range(max(0, robot_x - self.VIEWPORT_RADIUS), min(self.alto, robot_x + self.VIEWPORT_RADIUS + 1)):
-    #         for j in range(max(0, robot_y - self.VIEWPORT_RADIUS), min(self.ancho, robot_y + self.VIEWPORT_RADIUS + 1)):
-    #             distance = np.sqrt((i - robot_x) ** 2 + (j - robot_y) ** 2)
-    #             if distance <= self.VIEWPORT_RADIUS:
-    #                 self.niebla[i][j].tipo = self.mapaGlobal[i][j].tipo

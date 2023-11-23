@@ -6,7 +6,6 @@ class TipoCasilla(Enum):
     PARED = 1
     VISITADO = 2
     VISIONADA = 3
-    NIEBLA = 4
 
 
 class TipoObjetivo(Enum):

@@ -77,17 +77,3 @@ def astar(start: Tuple[int, int], end: Tuple[int, int], mapaLocal: List[List[Cas
                 heapq.heappush(openList, Node(coordenadas=coordenadaVecina, g=nuevaG, h=nuevaH, parent=nodoActual))
 
     return None
-
-# # Ejemplo de uso:
-# start_coord = (0, 0)
-# end_coord = (4, 4)
-# obstacles = [ # Casilas en vez de numeros
-#     [0, 0, 0, 0, 0],
-#     [0, 1, 1, 0, 0],
-#     [0, 1, 0, 0, 0],
-#     [0, 0, 0, 1, 0],
-#     [0, 0, 0, 1, 0]
-# ]
-
-# result = astar(start_coord, end_coord, obstacles)
-# print(result)

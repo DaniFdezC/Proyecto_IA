@@ -30,30 +30,22 @@ filas = len(mapaGlobal)
 columnas = len(mapaGlobal[0])
 
 tamano_casilla = 5
+campo_vision = 20
 
 pantalla = pygame.display.set_mode((columnas*tamano_casilla, filas*tamano_casilla))
 pygame.display.set_caption("Matriz de Casillas")
+vecinos = [(-1,-1), (-1, 0), (-1, 1), (0, 0), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
 
 radioVision = []
-for i in range(-20, 20):
-    for j in range(-20, 20, 1):
+for i in range(-campo_vision, campo_vision):
+    for j in range(-campo_vision, campo_vision, 1):
         # Evita agregar el punto (0, 0) a la lista de direcciones
         if (i, j) != (0, 0):
             # Calcula la distancia desde el punto central (0, 0) hasta el punto actual (i, j)
             distance = math.sqrt(i ** 2 + j ** 2)
             # Si la distancia es menor o igual al radio
-            if distance < 20:
+            if distance < campo_vision:
                 radioVision.append((i, j))
-campoVisionParaVerOtroRobot = 10
-
-# robot1 = Robot(matriz_resultante, (27, 27), campoVision, niebla)
-# robot2 = Robot(matriz_resultante, (7, 92), campoVision, niebla)
-# robot3 = Robot(matriz_resultante, (9, 147), campoVision, niebla)
-# robot4 = Robot(matriz_resultante, (43, 96), campoVision, niebla)
-# robot5 = Robot(matriz_resultante, (43, 98), campoVision, niebla)
-# robot6 = Robot(matriz_resultante, (78, 27), campoVision, niebla)
-# robot7 = Robot(matriz_resultante, (67, 94), campoVision, niebla)
-# robot8 = Robot(matriz_resultante, (97, 86), campoVision, niebla)
 
 robot1 = Robot(mapaGlobal, (27, 27), radioVision)
 robot2 = Robot(mapaGlobal, (92, 7), radioVision)
@@ -76,7 +68,7 @@ mapaGlobal[83][61].tipoObjetivo = TipoObjetivo.LIBRE
 mapaGlobal[85][1].tipoObjetivo = TipoObjetivo.LIBRE
 
 robots = [robot1, robot2, robot3, robot4, robot5, robot6, robot7, robot8]
-# robots = [robot8]
+
 iteraciones = 0
 robotsAcabados = 0
 nTotalRobots = len(robots)
@@ -96,8 +88,7 @@ while True:
             if evento.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-        # Limpiar la pantalla
-        pantalla.fill((255, 255, 255))
+
 
         # Dibujar la matriz en la pantalla
         for y in range(len(mapaGlobal)):
@@ -110,12 +101,8 @@ while True:
                     mapaGlobal[y][x].tipoObjetivo = TipoObjetivo.CAPTURADO
                     contadorObjetivos +=1
                     color = BLUE
-                elif (x, y) == robot.coordenadas:
-                    color = BLUE
                 elif casilla.tipoObjetivo is TipoObjetivo.LIBRE:
                     color = RED
-                elif casilla.tipo is TipoCasilla.NIEBLA:
-                    color = GREY
                 elif casilla.tipoObjetivo is TipoObjetivo.CAPTURADO:
                     color=GREEN
                 elif casilla.tipo is TipoCasilla.VISITADO or casilla.tipo is TipoCasilla.VISIONADA:
@@ -125,31 +112,17 @@ while True:
 
                 pygame.draw.rect(pantalla, color, (x * tamano_casilla, y * tamano_casilla, tamano_casilla, tamano_casilla))
 
+        # Hacer que se pinten los robots en 3x3 
+        for robot in robots:
+                for y in range(-1, 2):
+                    for x in range(-1, 2):
+                        pygame.draw.rect(pantalla, BLUE, (x+(robot.coordenadas[0]*tamano_casilla), y+(robot.coordenadas[1]*tamano_casilla), tamano_casilla, tamano_casilla))
+
         # Actualizar la pantalla
         pygame.display.flip()
-        # time.sleep(0.1)
     iteraciones += 1
     print(iteraciones)
 
     if contadorObjetivos == 10:
         print("Se han encontrado todos los objetivos")
         break
-
-    robotsIntercambiadoMapas: Set[Tuple[Robot, Robot]] = set()
-
-    for robot in robots:
-        for otroRobot in robots:
-            if (robot.coordenadas is otroRobot.coordenadas
-                    or (robot, otroRobot) in robotsIntercambiadoMapas
-                    or (otroRobot, robot) in robotsIntercambiadoMapas):
-                continue
-
-            distanciaX = abs(robot.coordenadas[0] - otroRobot.coordenadas[0])
-            distanciaY = abs(robot.coordenadas[1] - otroRobot.coordenadas[1])
-
-            if distanciaX <= campoVisionParaVerOtroRobot and distanciaY <= campoVisionParaVerOtroRobot:
-                # otroRobot.intercambiarMapa(robot, False)
-                # robot.intercambiarMapa(robot, True)
-
-                robotsIntercambiadoMapas.add((robot, otroRobot))
-                robotsIntercambiadoMapas.add((otroRobot, otroRobot))
