@@ -125,7 +125,7 @@ class Robot:
                         nearest_fog.append((i, j))
                         
         nearest_fog.sort(key=lambda x: abs(x[0] - self.coordenadas[0]) + abs(x[1] - self.coordenadas[1]))
-        if len(nearest_fog) > 30:
+        if len(nearest_fog) > 80:
             #print("Cuting down")
             nearest_fog = nearest_fog[:len(nearest_fog)//5]
         return nearest_fog
@@ -135,8 +135,8 @@ class Robot:
             if not self.nearest_fog:
                 self.quieto = True
                 return
-            #niebla_mas_cercana = self.nearest_fog.pop(random.randint(0, len(self.nearest_fog)-1))
-            niebla_mas_cercana = self.nearest_fog.pop(-1)
+            niebla_mas_cercana = self.nearest_fog.pop(random.randint(0, len(self.nearest_fog)-1))
+            #niebla_mas_cercana = self.nearest_fog.pop(-1)
             self.fog_buffer.append(niebla_mas_cercana)
             if (self.coordenadas in self.nearest_fog):
                 self.nearest_fog = []
@@ -206,8 +206,8 @@ class Robot:
         
         for vecino in vecinos:
             robot_vecino = self.buscar_robots_vecinos(vecino, self.robots)
-            objetivos_compartidos.update(robot_vecino.objetivos_conocidos)
             objetivos_salvados.update(robot_vecino.objetivos_rescatados)
+            objetivos_compartidos.update(robot_vecino.objetivos_conocidos.difference(objetivos_salvados))
             niebla_cercana.extend(robot_vecino.nearest_fog)
             robots_vecinos.append(robot_vecino)
         
@@ -222,7 +222,7 @@ class Robot:
 
         for robot in robots_vecinos:
             robot.mapaLocal = copy.deepcopy(mapa_compartido)
-            robot.niebla_cercana = copy.deepcopy(niebla_cercana)
+            robot.niebla_cercana = copy.deepcopy(niebla_cercana)                
             robot.objetivos_conocidos.update(objetivos_compartidos)
             robot.objetivos_rescatados.update(objetivos_salvados)
 
