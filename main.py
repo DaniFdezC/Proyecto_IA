@@ -29,23 +29,24 @@ class Main:
 
         self.tamano_casilla = 5
         self.iteraciones = 0
+        self.rescatados = [0]
 
         self.niebla = self.mapa_vacio(self.filas, self.columnas)
 
         self.pantalla = pygame.display.set_mode((self.columnas*self.tamano_casilla, self.filas*self.tamano_casilla))
-        pygame.display.set_caption("Matriz de Casillas")
+        pygame.display.set_caption(f"Mision De Rescate -- {self.rescatados[0]}/10 Rescatados")
 
         self.campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
         self.robots = list()
 
-        self.robot1 = Robot(self.matriz_resultante, (27, 27), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot2 = Robot(self.matriz_resultante, (7, 92), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot3 = Robot(self.matriz_resultante, (9, 147), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot4 = Robot(self.matriz_resultante, (43, 96), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot5 = Robot(self.matriz_resultante, (43, 98), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot6 = Robot(self.matriz_resultante, (78, 27), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot7 = Robot(self.matriz_resultante, (67, 94), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot8 = Robot(self.matriz_resultante, (97, 86), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot1 = Robot(self.matriz_resultante, (27, 27), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot2 = Robot(self.matriz_resultante, (7, 92), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot3 = Robot(self.matriz_resultante, (9, 147), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot4 = Robot(self.matriz_resultante, (43, 96), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot5 = Robot(self.matriz_resultante, (43, 98), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot6 = Robot(self.matriz_resultante, (78, 27), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot7 = Robot(self.matriz_resultante, (67, 94), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot8 = Robot(self.matriz_resultante, (97, 86), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
         
         self.robots.extend([self.robot1, self.robot2, self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8])
         
@@ -55,7 +56,7 @@ class Main:
         return [[Casilla(TipoCasilla.NIEBLA) for _ in range(columnas)] for _ in range(filas)]
 
     def run(self):
-        while True:
+        while self.rescatados[0] < 10:
             for robot in self.robots:
                 robot.moverse()
                 for evento in pygame.event.get():
@@ -90,6 +91,7 @@ class Main:
                         pygame.draw.rect(self.pantalla, color, (j * self.tamano_casilla, i * self.tamano_casilla, self.tamano_casilla, self.tamano_casilla))
 
                 pygame.display.flip()
+            pygame.display.set_caption(f"Mision De Rescate -- {self.rescatados[0]}/10 Rescatados -- Iteracion {self.iteraciones}")
             self.iteraciones += 1
             print(self.iteraciones)
 
