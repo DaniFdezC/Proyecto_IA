@@ -55,8 +55,8 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "explorar"):
             return path[::-1]
 
         x, y = current_node.coord
-        pygame.draw.rect(pantalla, (255, 0, 0), (y * 5, x * 5, 5, 5))
-        pygame.display.flip()
+        # pygame.draw.rect(pantalla, (255, 0, 0), (y * 5, x * 5, 5, 5))
+        # pygame.display.flip()
         neighbors = [
             (x - 1, y - 1),
             (x, y - 1),
@@ -114,8 +114,8 @@ def process_neighbor(neighbor_coord, current_node, end, open_list, pantalla, pyg
         if exists:
             return
         open_list.append(neighbor)
-        pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
-        pygame.display.flip()
+        # pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
+        # pygame.display.flip()
 
 # Ejemplo de uso:
 # start_coord = (0, 0)

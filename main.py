@@ -19,7 +19,8 @@ BLACK = (0, 0, 0)
 class Main:
     pass
     def __init__(self):
-        self.ruta_imagen = "./Imagenes/mapaDefinitivoConVictimas.png"
+        #self.ruta_imagen = "./Imagenes/mapaDefinitivoConVictimas.png"
+        self.ruta_imagen = "./Imagenes/Mapa_Ex02_NOrobots_OK.bmp"
         self.matriz_resultante = convertir_imagen_a_matriz(self.ruta_imagen)
 
         self.filas = len(self.matriz_resultante)
@@ -37,14 +38,14 @@ class Main:
         self.campoVision = [(-1,-1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, 1), (1, 0), (1, -1)]
         self.robots = list()
 
-        self.robot1 = Robot(self.matriz_resultante, (27, 27), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot2 = Robot(self.matriz_resultante, (7, 92), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot3 = Robot(self.matriz_resultante, (9, 147), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot4 = Robot(self.matriz_resultante, (43, 96), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot5 = Robot(self.matriz_resultante, (43, 98), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot6 = Robot(self.matriz_resultante, (78, 27), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot7 = Robot(self.matriz_resultante, (67, 94), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
-        self.robot8 = Robot(self.matriz_resultante, (97, 86), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot1 = Robot(self.matriz_resultante, (5-1, 147-1), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot2 = Robot(self.matriz_resultante, (7-1, 147-1), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot3 = Robot(self.matriz_resultante, (9-1, 147-1), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot4 = Robot(self.matriz_resultante, (12-1, 41-1), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot5 = Robot(self.matriz_resultante, (25-1, 81-1), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot6 = Robot(self.matriz_resultante, (54-1, 25-1), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot7 = Robot(self.matriz_resultante, (54-1, 27-1), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
+        self.robot8 = Robot(self.matriz_resultante, (86-1, 97-1), self.rescatados, self.niebla, self.pantalla, pygame, self.robots)
         
         self.robots.extend([self.robot1, self.robot2, self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8])
         
