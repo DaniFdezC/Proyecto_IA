@@ -47,9 +47,9 @@ class Main:
         self.robot7 = Robot(self.matriz_resultante, (67, 94), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
         self.robot8 = Robot(self.matriz_resultante, (97, 86), self.campoVision, self.niebla, self.pantalla, pygame, self.robots)
         
-        #self.robots.extend([self.robot1, self.robot2, self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8])
+        self.robots.extend([self.robot1, self.robot2, self.robot3, self.robot4, self.robot5, self.robot6, self.robot7, self.robot8])
         
-        self.robots = [self.robot1]
+        #self.robots = [self.robot1]
 
     def mapa_vacio(self, filas, columnas):
         return [[Casilla(TipoCasilla.NIEBLA) for _ in range(columnas)] for _ in range(filas)]
@@ -65,7 +65,7 @@ class Main:
 
                 self.pantalla.fill((255, 255, 255))
 
-                for i, fila in enumerate(self.niebla):
+                for i, fila in enumerate(robot.mapaLocal):
                     for j, casilla in enumerate(fila):
                         if casilla.tipo is TipoCasilla.PARED:
                             color = BLACK

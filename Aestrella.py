@@ -39,25 +39,12 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
     open_list.append(start_node)
 
     while open_list:
-        current_index = 0
-        current_node = None
-        if ((type == "victima") or (type == "explorar")):
-            current_node = min(open_list, key=lambda node: node.f)
-            open_list.remove(current_node)
-            # current_index = 0
-            # for index, item in enumerate(open_list):
-            #     if item.f < current_node.f:
-            #         current_node = item
-            #         current_index = index
-        elif type == "dfs":
-            current_node = open_list[-1]
-            current_index = len(open_list)-1
-            
-        # Pop current off open list, add to closed list
-        #open_list.pop(current_index)
+        
+        current_node = min(open_list, key=lambda node: node.f)
+        
+        open_list.remove(current_node)
         closed_set.add(current_node.coord)
-        #print(" -- Current", current_node.coord)
-        #print(" -- End -- ", end, (alto, ancho))
+        
         if current_node.coord == end:
             path = []
             while current_node:
@@ -71,30 +58,17 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
 
 
         x, y = current_node.coord
-        pantalla.fill((255, 255, 255))
         pygame.draw.rect(pantalla, (255, 0, 0), (y * 5, x * 5, 5, 5))
         pygame.display.flip()
-        #print("--- Movimiento a ", current_node.coord)
-        # neighbors = [
-        #     (x - 1, y - 1),
-        #     (x, y - 1),
-        #     (x + 1, y - 1),
-        #     (x - 1, y),
-        #     (x + 1, y),
-        #     (x - 1, y + 1),
-        #     (x, y + 1),
-        #     (x + 1, y + 1)
-        # ]
-        #LEFT-DOWN-RIGHT-UP
         neighbors = [
+            (x - 1, y - 1),
+            (x, y - 1),
+            (x + 1, y - 1),
             (x - 1, y),
+            (x + 1, y),
             (x - 1, y + 1),
             (x, y + 1),
-            (x + 1, y + 1),
-            (x + 1, y),
-            (x + 1, y - 1),
-            (x, y - 1),
-            (x - 1, y - 1)
+            (x + 1, y + 1)
         ]
 
         for neighbor_coord in neighbors:
@@ -103,13 +77,6 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
                 print("No se encontro camino")
                 return None
             
-            # pygame.draw.rect(pantalla, (229, 137, 194), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
-            # pygame.display.flip()
-            
-            #if (neighbor_coord == end):
-                #print("END! ", neighbor_coord)
-                #print("0 ", ancho)
-                #print("1 ", alto)
             
             if (
                 neighbor_coord[0] < 0 or neighbor_coord[0] >= alto or
@@ -121,42 +88,47 @@ def astar(start, end, obstacles_map, pygame, pantalla, type = "dfs"):
             #print("A* --> ", neighbor_coord,  obstacles_map[neighbor_coord[1]][neighbor_coord[0]].tipo, obstacles_map[neighbor_coord[1]][neighbor_coord[0]].tipo != TipoCasilla.NADA)
            #print("Current neighbor", neighbor_coord, obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo )
             #print("Closed Set", closed_set)
-            if ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo == TipoCasilla.NIEBLA) and (type != "victima")):
+            if ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo == TipoCasilla.NIEBLA) and (type == "explorar")):
                print("TOQUE NIEBLA! ", neighbor_coord, type)
                end = neighbor_coord
+               process_neighbor(neighbor_coord, current_node, end, type, open_list, pantalla, pygame)
+               break
             elif ((obstacles_map[neighbor_coord[0]][neighbor_coord[1]].tipo != TipoCasilla.NADA) and (neighbor_coord != end)):
                 closed_set.add(neighbor_coord)
                 continue
-
-            neighbor = Node(neighbor_coord)
-            neighbor.parent = current_node
-
-            if type == "dfs":
-                open_list.append(neighbor)
-                pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
-                pygame.display.flip()
-                break
             
-            # Create the f, g, and h values
-            neighbor.g = current_node.g + hypot(current_node.coord, neighbor.coord)
-            neighbor.h = distance(neighbor.coord, end)
-            neighbor.f = neighbor.g + neighbor.h
-
-            exists = False
-            # Child is already in the open list
-            for open_node in open_list:
-                if neighbor.coord == open_node.coord and neighbor.g > open_node.g:
-                    exists = True
-                    break 
-            
-            if exists:
-                break
-            open_list.append(neighbor)
-            pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
-            pygame.display.flip()
+            process_neighbor(neighbor_coord, current_node, end, type, open_list, pantalla, pygame)
                    
     print("No se encontro camino")
     return None
+
+def process_neighbor(neighbor_coord, current_node, end, type, open_list, pantalla, pygame):
+        neighbor = Node(neighbor_coord)
+        neighbor.parent = current_node
+
+        if type == "dfs":
+            open_list.append(neighbor)
+            pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
+            pygame.display.flip()
+            return
+
+        # Create the f, g, and h values
+        neighbor.g = current_node.g + hypot(current_node.coord, neighbor.coord)
+        neighbor.h = distance(neighbor.coord, end)
+        neighbor.f = neighbor.g + neighbor.h
+
+        exists = False
+        # Child is already in the open list
+        for open_node in open_list:
+            if neighbor.coord == open_node.coord and neighbor.g >= open_node.g:
+                exists = True
+                break 
+
+        if exists:
+            return
+        open_list.append(neighbor)
+        pygame.draw.rect(pantalla, (0, 255, 255), (neighbor_coord[1] * 5, neighbor_coord[0] * 5, 5, 5))
+        pygame.display.flip()
 
 # Ejemplo de uso:
 # start_coord = (0, 0)
